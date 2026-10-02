@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>SKYNNYRD</title>
 
   <style>
@@ -10,133 +11,530 @@
       box-sizing: border-box;
     }
 
-    html, body {
+    html,
+    body {
       margin: 0;
       width: 100%;
       height: 100%;
-      background: #050505;
       overflow: hidden;
+      background: #e7e4dc;
+      color: #111;
     }
 
     body {
-      color: #f2f2f2;
       font-family: Arial, Helvetica, sans-serif;
-      cursor: crosshair;
-    }
-
-    .world {
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      cursor: none;
       position: relative;
     }
 
-    .core {
-      text-align: center;
-      transition: transform 1.4s cubic-bezier(.2,.8,.2,1);
+    /* paper / interference */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .16;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent 0px,
+          transparent 3px,
+          rgba(0,0,0,.025) 4px
+        );
+      z-index: 20;
+    }
+
+    /* giant background word */
+
+    .word {
+      position: fixed;
+      left: -2vw;
+      top: 7vh;
+      font-size: clamp(90px, 17vw, 260px);
+      line-height: .72;
+      letter-spacing: -.075em;
+      font-weight: 700;
+      white-space: nowrap;
+      user-select: none;
+      transform:
+        translate(
+          calc(var(--mx, 0) * 18px),
+          calc(var(--my, 0) * 12px)
+        )
+        rotate(-2deg);
+      transition: transform 1.2s cubic-bezier(.2,.8,.2,1);
+      z-index: 1;
+    }
+
+    /* little sentence */
+
+    .motto {
+      position: fixed;
+      left: 5vw;
+      bottom: 7vh;
+      font-family: monospace;
+      font-size: 11px;
+      letter-spacing: .08em;
+      z-index: 10;
       user-select: none;
     }
 
-    .name {
-      font-size: clamp(30px, 6vw, 72px);
-      font-weight: 400;
-      letter-spacing: .18em;
-      margin-left: .18em;
-    }
+    /* fake coordinates */
 
-    .motto {
-      margin-top: 18px;
-      font-size: 9px;
-      letter-spacing: .28em;
-      opacity: .28;
-      margin-left: .28em;
-    }
-
-    .day {
-      margin-top: 22px;
-      font-size: 10px;
-      letter-spacing: .5em;
-      margin-left: .5em;
-      opacity: .4;
-    }
-
-    .visitor {
+    .coordinates {
       position: fixed;
-      width: 3px;
-      height: 3px;
-      border-radius: 50%;
-      background: white;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 1s ease, transform 1.5s ease;
+      right: 4vw;
+      top: 4vh;
+      font-family: monospace;
+      font-size: 9px;
+      line-height: 1.6;
+      text-align: right;
+      opacity: .55;
+      z-index: 10;
+      user-select: none;
     }
+
+    /* tiny strange text */
 
     .whisper {
       position: fixed;
-      bottom: 18px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 7px;
-      letter-spacing: .4em;
-      opacity: 0;
-      transition: opacity 2s ease;
+      right: 7vw;
+      bottom: 11vh;
+      font-family: monospace;
+      font-size: 9px;
+      opacity: .55;
+      z-index: 10;
+      user-select: none;
+      transition: opacity .5s;
     }
 
-    body:hover .whisper {
-      opacity: .12;
+    /* rabbit */
+
+    .rabbit {
+      position: fixed;
+      width: 170px;
+      height: 170px;
+      left: 50%;
+      top: 50%;
+      transform:
+        translate(-50%, -50%)
+        translate(
+          calc(var(--rx, 0) * 1px),
+          calc(var(--ry, 0) * 1px)
+        )
+        rotate(var(--rr, 0deg));
+      z-index: 8;
+      transition:
+        transform 1.2s cubic-bezier(.18,.8,.2,1);
+      cursor: none;
+    }
+
+    .rabbit svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .rabbit path,
+    .rabbit circle {
+      fill: none;
+      stroke: #111;
+      stroke-width: 1.4;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .rabbit .eye {
+      fill: #111;
+      stroke: none;
+    }
+
+    /* little label attached to rabbit */
+
+    .rabbit-label {
+      position: absolute;
+      left: 90px;
+      top: 154px;
+      font-family: monospace;
+      font-size: 8px;
+      white-space: nowrap;
+      opacity: .35;
+      transition: opacity .4s;
+    }
+
+    .rabbit:hover .rabbit-label {
+      opacity: 1;
+    }
+
+    /* cursor */
+
+    .cursor {
+      position: fixed;
+      width: 12px;
+      height: 12px;
+      border: 1px solid #111;
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 100;
+      mix-blend-mode: difference;
+    }
+
+    /* marks appear when clicking */
+
+    .mark {
+      position: fixed;
+      width: 5px;
+      height: 5px;
+      background: #111;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: disappear 4s forwards;
+      z-index: 5;
+    }
+
+    @keyframes disappear {
+      0% {
+        opacity: .8;
+        transform: scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(0);
+      }
+    }
+
+    /* hidden message */
+
+    .message {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-family: monospace;
+      font-size: 11px;
+      letter-spacing: .15em;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 50;
+      transition: opacity .6s;
+    }
+
+    .message.visible {
+      opacity: 1;
+    }
+
+    /* mobile */
+
+    @media (max-width: 600px) {
+
+      .word {
+        top: 18vh;
+        left: -8vw;
+        font-size: 25vw;
+      }
+
+      .rabbit {
+        width: 130px;
+        height: 130px;
+      }
+
+      .motto {
+        left: 6vw;
+        bottom: 6vh;
+        font-size: 9px;
+      }
+
+      .coordinates {
+        font-size: 8px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <div class="world">
+  <div class="word">SKYNNYRD</div>
 
-    <div class="core" id="core">
-      <div class="name">SKYNNYRD</div>
-      <div class="motto">peaceful visitors chasing rabbits</div>
-      <div class="day">01</div>
+  <div class="coordinates">
+    00° 00′ 00″<br>
+    00° 00′ 00″<br>
+    <span id="status">UNFOUND</span>
+  </div>
+
+  <div class="motto">
+    peaceful visitors chasing rabbits
+  </div>
+
+  <div class="whisper" id="whisper">
+    something is moving
+  </div>
+
+  <div class="rabbit" id="rabbit">
+
+    <svg viewBox="0 0 200 200">
+
+      <!-- ears -->
+      <path d="M73 79 C57 48 54 15 65 8 C76 3 83 38 87 67" />
+      <path d="M103 68 C108 34 119 3 130 8 C141 15 128 49 119 78" />
+
+      <!-- head -->
+      <path d="
+        M68 76
+        C72 59 88 52 105 58
+        C124 64 134 79 128 98
+        C123 116 103 126 84 119
+        C66 113 61 94 68 76
+      " />
+
+      <!-- body -->
+      <path d="
+        M84 116
+        C56 117 34 137 38 158
+        C42 179 70 185 94 173
+        C112 164 124 146 116 127
+      " />
+
+      <!-- back leg -->
+      <path d="
+        M51 156
+        C31 158 23 171 31 181
+        C40 192 61 185 70 173
+      " />
+
+      <!-- front leg -->
+      <path d="
+        M108 141
+        C127 142 141 153 136 167
+        C131 179 113 176 105 165
+      " />
+
+      <!-- tail -->
+      <circle cx="38" cy="141" r="10" />
+
+      <!-- eye -->
+      <circle class="eye" cx="107" cy="78" r="2.8" />
+
+      <!-- nose -->
+      <path d="M128 96 L135 99 L128 102" />
+
+    </svg>
+
+    <div class="rabbit-label">
+      DO NOT FOLLOW
     </div>
 
   </div>
 
-  <div class="visitor" id="visitor"></div>
+  <div class="cursor" id="cursor"></div>
 
-  <div class="whisper">COME BACK</div>
+  <div class="message" id="message">
+    YOU FOUND NOTHING
+  </div>
+
 
   <script>
-    const core = document.getElementById("core");
-    const visitor = document.getElementById("visitor");
+
+    const rabbit = document.getElementById("rabbit");
+    const cursor = document.getElementById("cursor");
+    const message = document.getElementById("message");
+    const whisper = document.getElementById("whisper");
+    const status = document.getElementById("status");
+
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+
+    let rabbitX = 0;
+    let rabbitY = 0;
 
     document.addEventListener("mousemove", function(event) {
 
-      const x = (event.clientX / window.innerWidth - 0.5) * 2;
-      const y = (event.clientY / window.innerHeight - 0.5) * 2;
+      mouseX = event.clientX;
+      mouseY = event.clientY;
 
-      core.style.transform =
-        `translate(${x * 7}px, ${y * 7}px)`;
+      cursor.style.left = mouseX + "px";
+      cursor.style.top = mouseY + "px";
 
-      if (Math.random() < 0.02) {
+      const x =
+        (mouseX / window.innerWidth - .5) * 2;
 
-        visitor.style.left = event.clientX + "px";
-        visitor.style.top = event.clientY + "px";
+      const y =
+        (mouseY / window.innerHeight - .5) * 2;
 
-        visitor.style.opacity = ".35";
+      document.documentElement.style.setProperty(
+        "--mx",
+        x
+      );
 
-        visitor.style.transform =
-          `scale(${1 + Math.random() * 5})`;
+      document.documentElement.style.setProperty(
+        "--my",
+        y
+      );
+
+      /*
+        The rabbit slowly notices you.
+      */
+
+      const distanceX = mouseX - window.innerWidth / 2;
+      const distanceY = mouseY - window.innerHeight / 2;
+
+      const distance =
+        Math.sqrt(
+          distanceX * distanceX +
+          distanceY * distanceY
+        );
+
+      if (distance < 170) {
+
+        rabbit.style.setProperty(
+          "--rx",
+          -distanceX * .35
+        );
+
+        rabbit.style.setProperty(
+          "--ry",
+          -distanceY * .35
+        );
+
+        rabbit.style.setProperty(
+          "--rr",
+          distanceX * .03 + "deg"
+        );
+
+      }
+
+    });
+
+
+    /*
+      Clicking anywhere leaves a trace.
+    */
+
+    document.addEventListener("click", function(event) {
+
+      if (event.target.closest(".rabbit")) {
+        rabbitRun();
+        return;
+      }
+
+      const mark = document.createElement("div");
+
+      mark.className = "mark";
+
+      mark.style.left = event.clientX + "px";
+      mark.style.top = event.clientY + "px";
+
+      document.body.appendChild(mark);
+
+      setTimeout(function() {
+        mark.remove();
+      }, 4000);
+
+    });
+
+
+    /*
+      The rabbit runs when caught.
+    */
+
+    function rabbitRun() {
+
+      const x =
+        (Math.random() - .5) *
+        Math.min(window.innerWidth * .75, 700);
+
+      const y =
+        (Math.random() - .5) *
+        Math.min(window.innerHeight * .65, 500);
+
+      const rotation =
+        (Math.random() - .5) * 35;
+
+      rabbit.style.setProperty("--rx", x);
+      rabbit.style.setProperty("--ry", y);
+      rabbit.style.setProperty("--rr", rotation + "deg");
+
+      status.textContent = "MOVING";
+
+      whisper.textContent =
+        Math.random() > .5
+        ? "you almost had it"
+        : "it saw you";
+
+      setTimeout(function() {
+        status.textContent = "UNFOUND";
+      }, 1600);
+
+    }
+
+
+    /*
+      Every so often, the little sentence changes.
+    */
+
+    const whispers = [
+      "something is moving",
+      "not everything is here",
+      "you were not supposed to see this",
+      "keep looking",
+      "nothing happened",
+      "there is another room",
+      "the rabbit was here",
+      "leave it alone"
+    ];
+
+    setInterval(function() {
+
+      whisper.style.opacity = "0";
+
+      setTimeout(function() {
+
+        whisper.textContent =
+          whispers[
+            Math.floor(
+              Math.random() * whispers.length
+            )
+          ];
+
+        whisper.style.opacity = ".55";
+
+      }, 600);
+
+    }, 7000);
+
+
+    /*
+      Secret key.
+      Press I.
+    */
+
+    document.addEventListener("keydown", function(event) {
+
+      if (event.key.toLowerCase() === "i") {
+
+        message.classList.add("visible");
 
         setTimeout(function() {
-          visitor.style.opacity = "0";
-        }, 500);
+          message.classList.remove("visible");
+        }, 1800);
+
       }
+
     });
 
-    document.addEventListener("mouseleave", function() {
-      core.style.transform = "translate(0,0)";
-    });
+
+    /*
+      Rabbit occasionally moves on its own.
+    */
+
+    setInterval(function() {
+
+      if (Math.random() < .7) {
+        rabbitRun();
+      }
+
+    }, 11000);
+
   </script>
 
 </body>
