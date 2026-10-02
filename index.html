@@ -1,541 +1,676 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>SKYNNYRD</title>
+<title>SKYNNYRD</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
 
-    html,
-    body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #e7e4dc;
-      color: #111;
-    }
+* {
+  box-sizing: border-box;
+}
 
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      cursor: none;
-      position: relative;
-    }
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #080808;
+  color: #e8e5dd;
+}
 
-    /* paper / interference */
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      opacity: .16;
-      background:
-        repeating-linear-gradient(
-          0deg,
-          transparent 0px,
-          transparent 3px,
-          rgba(0,0,0,.025) 4px
-        );
-      z-index: 20;
-    }
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  cursor: none;
+}
 
-    /* giant background word */
+/* --------------------------------
+   THE ROOM
+-------------------------------- */
 
-    .word {
-      position: fixed;
-      left: -2vw;
-      top: 7vh;
-      font-size: clamp(90px, 17vw, 260px);
-      line-height: .72;
-      letter-spacing: -.075em;
-      font-weight: 700;
-      white-space: nowrap;
-      user-select: none;
-      transform:
-        translate(
-          calc(var(--mx, 0) * 18px),
-          calc(var(--my, 0) * 12px)
-        )
-        rotate(-2deg);
-      transition: transform 1.2s cubic-bezier(.2,.8,.2,1);
-      z-index: 1;
-    }
+.room {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse at 50% 48%,
+      #191919 0%,
+      #0a0a0a 48%,
+      #000 100%
+    );
+}
 
-    /* little sentence */
+/* subtle texture */
 
-    .motto {
-      position: fixed;
-      left: 5vw;
-      bottom: 7vh;
-      font-family: monospace;
-      font-size: 11px;
-      letter-spacing: .08em;
-      z-index: 10;
-      user-select: none;
-    }
+.room::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .08;
 
-    /* fake coordinates */
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 2px,
+      white 3px
+    );
 
-    .coordinates {
-      position: fixed;
-      right: 4vw;
-      top: 4vh;
-      font-family: monospace;
-      font-size: 9px;
-      line-height: 1.6;
-      text-align: right;
-      opacity: .55;
-      z-index: 10;
-      user-select: none;
-    }
+  mix-blend-mode: overlay;
+}
 
-    /* tiny strange text */
+/* --------------------------------
+   GIANT OBJECT
+-------------------------------- */
 
-    .whisper {
-      position: fixed;
-      right: 7vw;
-      bottom: 11vh;
-      font-family: monospace;
-      font-size: 9px;
-      opacity: .55;
-      z-index: 10;
-      user-select: none;
-      transition: opacity .5s;
-    }
+.object {
+  position: absolute;
 
-    /* rabbit */
+  width: 62vw;
+  height: 62vw;
 
-    .rabbit {
-      position: fixed;
-      width: 170px;
-      height: 170px;
-      left: 50%;
-      top: 50%;
-      transform:
-        translate(-50%, -50%)
-        translate(
-          calc(var(--rx, 0) * 1px),
-          calc(var(--ry, 0) * 1px)
-        )
-        rotate(var(--rr, 0deg));
-      z-index: 8;
-      transition:
-        transform 1.2s cubic-bezier(.18,.8,.2,1);
-      cursor: none;
-    }
+  max-width: 760px;
+  max-height: 760px;
 
-    .rabbit svg {
-      width: 100%;
-      height: 100%;
-      overflow: visible;
-    }
+  left: 50%;
+  top: 50%;
 
-    .rabbit path,
-    .rabbit circle {
-      fill: none;
-      stroke: #111;
-      stroke-width: 1.4;
-      vector-effect: non-scaling-stroke;
-    }
+  transform:
+    translate(-50%, -50%)
+    rotate(-8deg);
 
-    .rabbit .eye {
-      fill: #111;
-      stroke: none;
-    }
+  border-radius:
+    47% 53% 48% 52% /
+    55% 44% 56% 45%;
 
-    /* little label attached to rabbit */
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      #333 0%,
+      #151515 35%,
+      #050505 72%
+    );
 
-    .rabbit-label {
-      position: absolute;
-      left: 90px;
-      top: 154px;
-      font-family: monospace;
-      font-size: 8px;
-      white-space: nowrap;
-      opacity: .35;
-      transition: opacity .4s;
-    }
+  box-shadow:
+    inset -60px -80px 140px rgba(0,0,0,.9),
+    inset 30px 30px 80px rgba(255,255,255,.025),
+    0 0 120px rgba(0,0,0,.9);
 
-    .rabbit:hover .rabbit-label {
-      opacity: 1;
-    }
+  transition:
+    transform 2s cubic-bezier(.2,.8,.2,1);
+}
 
-    /* cursor */
+/* object moves with mouse */
 
-    .cursor {
-      position: fixed;
-      width: 12px;
-      height: 12px;
-      border: 1px solid #111;
-      border-radius: 50%;
-      pointer-events: none;
-      transform: translate(-50%, -50%);
-      z-index: 100;
-      mix-blend-mode: difference;
-    }
+.object::before {
+  content: "";
 
-    /* marks appear when clicking */
+  position: absolute;
 
-    .mark {
-      position: fixed;
-      width: 5px;
-      height: 5px;
-      background: #111;
-      border-radius: 50%;
-      pointer-events: none;
-      animation: disappear 4s forwards;
-      z-index: 5;
-    }
+  width: 32%;
+  height: 32%;
 
-    @keyframes disappear {
-      0% {
-        opacity: .8;
-        transform: scale(1);
-      }
+  left: 28%;
+  top: 24%;
 
-      100% {
-        opacity: 0;
-        transform: scale(0);
-      }
-    }
+  border-radius: 50%;
 
-    /* hidden message */
+  background: #000;
 
-    .message {
-      position: fixed;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      font-family: monospace;
-      font-size: 11px;
-      letter-spacing: .15em;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 50;
-      transition: opacity .6s;
-    }
+  box-shadow:
+    0 0 70px rgba(255,255,255,.025);
+}
 
-    .message.visible {
-      opacity: 1;
-    }
+/* --------------------------------
+   SKYNNYRD
+-------------------------------- */
 
-    /* mobile */
+.name {
+  position: absolute;
 
-    @media (max-width: 600px) {
+  left: 50%;
+  top: 50%;
 
-      .word {
-        top: 18vh;
-        left: -8vw;
-        font-size: 25vw;
-      }
+  transform:
+    translate(-50%, -50%);
 
-      .rabbit {
-        width: 130px;
-        height: 130px;
-      }
+  font-size:
+    clamp(48px, 10vw, 150px);
 
-      .motto {
-        left: 6vw;
-        bottom: 6vh;
-        font-size: 9px;
-      }
+  font-weight: 700;
 
-      .coordinates {
-        font-size: 8px;
-      }
-    }
-  </style>
+  letter-spacing:
+    -.08em;
+
+  color: #e8e5dd;
+
+  mix-blend-mode: difference;
+
+  user-select: none;
+
+  z-index: 5;
+
+  white-space: nowrap;
+}
+
+/* --------------------------------
+   SMALL TEXT
+-------------------------------- */
+
+.fragment {
+  position: absolute;
+
+  font-family: monospace;
+
+  font-size: 9px;
+
+  letter-spacing: .12em;
+
+  color: #aaa;
+
+  opacity: .55;
+
+  user-select: none;
+
+  z-index: 10;
+}
+
+.f1 {
+  left: 6vw;
+  top: 9vh;
+}
+
+.f2 {
+  right: 8vw;
+  top: 18vh;
+}
+
+.f3 {
+  left: 12vw;
+  bottom: 18vh;
+}
+
+.f4 {
+  right: 6vw;
+  bottom: 9vh;
+}
+
+/* --------------------------------
+   THE NUMBER
+-------------------------------- */
+
+.number {
+  position: absolute;
+
+  right: 14vw;
+  bottom: 24vh;
+
+  font-family: monospace;
+
+  font-size: 14px;
+
+  opacity: .7;
+
+  z-index: 10;
+
+  cursor: none;
+
+  transition:
+    opacity .4s,
+    transform .4s;
+}
+
+.number:hover {
+  opacity: 1;
+  transform: scale(1.5);
+}
+
+/* --------------------------------
+   RABBIT
+-------------------------------- */
+
+.rabbit {
+  position: absolute;
+
+  width: 110px;
+  height: 150px;
+
+  left: 18%;
+  top: 55%;
+
+  opacity: .45;
+
+  z-index: 12;
+
+  transition:
+    transform 1.8s cubic-bezier(.2,.8,.2,1),
+    opacity 1s;
+
+  pointer-events: none;
+}
+
+.rabbit svg {
+  width: 100%;
+  height: 100%;
+}
+
+.rabbit path,
+.rabbit circle {
+  fill: none;
+  stroke: #d9d6ce;
+  stroke-width: 1;
+}
+
+.rabbit .eye {
+  fill: #d9d6ce;
+  stroke: none;
+}
+
+/* --------------------------------
+   CURSOR
+-------------------------------- */
+
+.cursor {
+  position: fixed;
+
+  width: 14px;
+  height: 14px;
+
+  border:
+    1px solid #fff;
+
+  border-radius: 50%;
+
+  pointer-events: none;
+
+  transform:
+    translate(-50%, -50%);
+
+  z-index: 100;
+
+  mix-blend-mode: difference;
+
+  transition:
+    width .2s,
+    height .2s;
+}
+
+/* --------------------------------
+   HIDDEN MESSAGE
+-------------------------------- */
+
+.message {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  transform:
+    translate(-50%, -50%);
+
+  font-family: monospace;
+
+  font-size: 10px;
+
+  letter-spacing: .3em;
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  z-index: 50;
+
+  transition:
+    opacity 1s;
+}
+
+.message.visible {
+  opacity: 1;
+}
+
+/* --------------------------------
+   SECOND ROOM
+-------------------------------- */
+
+.second {
+  position: fixed;
+
+  inset: 0;
+
+  background: #e3dfd6;
+
+  color: #111;
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  z-index: 200;
+
+  transition:
+    opacity 1.5s;
+}
+
+.second.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.second-word {
+  position: absolute;
+
+  left: 5vw;
+  top: 8vh;
+
+  font-size:
+    clamp(50px, 12vw, 180px);
+
+  letter-spacing:
+    -.08em;
+
+  line-height: .8;
+
+  font-weight: 700;
+}
+
+.second-text {
+  position: absolute;
+
+  left: 7vw;
+  bottom: 10vh;
+
+  font-family: monospace;
+
+  font-size: 10px;
+
+  line-height: 1.7;
+}
+
+.close {
+  position: absolute;
+
+  right: 6vw;
+  top: 6vh;
+
+  font-family: monospace;
+
+  font-size: 10px;
+
+  cursor: pointer;
+
+  opacity: .6;
+}
+
+.close:hover {
+  opacity: 1;
+}
+
+</style>
 </head>
 
 <body>
 
-  <div class="word">SKYNNYRD</div>
+<div class="room" id="room">
 
-  <div class="coordinates">
-    00° 00′ 00″<br>
-    00° 00′ 00″<br>
-    <span id="status">UNFOUND</span>
+  <div class="object" id="object"></div>
+
+  <div class="name">
+    SKYNNYRD
   </div>
 
-  <div class="motto">
-    peaceful visitors chasing rabbits
+  <div class="fragment f1">
+    peaceful visitors
   </div>
 
-  <div class="whisper" id="whisper">
-    something is moving
+  <div class="fragment f2">
+    something was here
   </div>
+
+  <div class="fragment f3">
+    do not explain
+  </div>
+
+  <div class="fragment f4">
+    chasing rabbits
+  </div>
+
+  <div class="number" id="number">
+    17
+  </div>
+
 
   <div class="rabbit" id="rabbit">
 
-    <svg viewBox="0 0 200 200">
+    <svg viewBox="0 0 100 150">
 
-      <!-- ears -->
-      <path d="M73 79 C57 48 54 15 65 8 C76 3 83 38 87 67" />
-      <path d="M103 68 C108 34 119 3 130 8 C141 15 128 49 119 78" />
+      <path d="M40 60 C28 35 28 8 38 5 C48 3 48 34 50 53"/>
+      <path d="M55 53 C58 30 65 4 75 7 C83 12 69 39 64 61"/>
 
-      <!-- head -->
       <path d="
-        M68 76
-        C72 59 88 52 105 58
-        C124 64 134 79 128 98
-        C123 116 103 126 84 119
-        C66 113 61 94 68 76
-      " />
+        M35 58
+        C40 45 60 45 68 58
+        C77 73 66 88 52 91
+        C38 92 29 76 35 58
+      "/>
 
-      <!-- body -->
       <path d="
-        M84 116
-        C56 117 34 137 38 158
-        C42 179 70 185 94 173
-        C112 164 124 146 116 127
-      " />
+        M39 89
+        C20 95 13 112 20 128
+        C27 143 48 145 62 133
+        C72 123 71 105 59 94
+      "/>
 
-      <!-- back leg -->
-      <path d="
-        M51 156
-        C31 158 23 171 31 181
-        C40 192 61 185 70 173
-      " />
+      <circle cx="68" cy="112" r="9"/>
 
-      <!-- front leg -->
-      <path d="
-        M108 141
-        C127 142 141 153 136 167
-        C131 179 113 176 105 165
-      " />
-
-      <!-- tail -->
-      <circle cx="38" cy="141" r="10" />
-
-      <!-- eye -->
-      <circle class="eye" cx="107" cy="78" r="2.8" />
-
-      <!-- nose -->
-      <path d="M128 96 L135 99 L128 102" />
+      <circle
+        class="eye"
+        cx="60"
+        cy="63"
+        r="2"
+      />
 
     </svg>
 
-    <div class="rabbit-label">
-      DO NOT FOLLOW
-    </div>
-
   </div>
+
 
   <div class="cursor" id="cursor"></div>
 
   <div class="message" id="message">
-    YOU FOUND NOTHING
+    YOU WEREN'T SUPPOSED TO FIND THIS
   </div>
 
-
-  <script>
-
-    const rabbit = document.getElementById("rabbit");
-    const cursor = document.getElementById("cursor");
-    const message = document.getElementById("message");
-    const whisper = document.getElementById("whisper");
-    const status = document.getElementById("status");
-
-    let mouseX = window.innerWidth / 2;
-    let mouseY = window.innerHeight / 2;
-
-    let rabbitX = 0;
-    let rabbitY = 0;
-
-    document.addEventListener("mousemove", function(event) {
-
-      mouseX = event.clientX;
-      mouseY = event.clientY;
-
-      cursor.style.left = mouseX + "px";
-      cursor.style.top = mouseY + "px";
-
-      const x =
-        (mouseX / window.innerWidth - .5) * 2;
-
-      const y =
-        (mouseY / window.innerHeight - .5) * 2;
-
-      document.documentElement.style.setProperty(
-        "--mx",
-        x
-      );
-
-      document.documentElement.style.setProperty(
-        "--my",
-        y
-      );
-
-      /*
-        The rabbit slowly notices you.
-      */
-
-      const distanceX = mouseX - window.innerWidth / 2;
-      const distanceY = mouseY - window.innerHeight / 2;
-
-      const distance =
-        Math.sqrt(
-          distanceX * distanceX +
-          distanceY * distanceY
-        );
-
-      if (distance < 170) {
-
-        rabbit.style.setProperty(
-          "--rx",
-          -distanceX * .35
-        );
-
-        rabbit.style.setProperty(
-          "--ry",
-          -distanceY * .35
-        );
-
-        rabbit.style.setProperty(
-          "--rr",
-          distanceX * .03 + "deg"
-        );
-
-      }
-
-    });
+</div>
 
 
-    /*
-      Clicking anywhere leaves a trace.
-    */
+<!-- SECOND ROOM -->
 
-    document.addEventListener("click", function(event) {
+<div class="second" id="second">
 
-      if (event.target.closest(".rabbit")) {
-        rabbitRun();
-        return;
-      }
+  <div class="second-word">
+    ROOM<br>
+    17
+  </div>
 
-      const mark = document.createElement("div");
+  <div class="second-text">
 
-      mark.className = "mark";
+    there was a door here.<br>
+    there is still a door here.<br><br>
 
-      mark.style.left = event.clientX + "px";
-      mark.style.top = event.clientY + "px";
+    nobody remembers opening it.
 
-      document.body.appendChild(mark);
+  </div>
 
-      setTimeout(function() {
-        mark.remove();
-      }, 4000);
+  <div class="close" id="close">
+    [ leave ]
+  </div>
 
-    });
+</div>
 
 
-    /*
-      The rabbit runs when caught.
-    */
+<script>
 
-    function rabbitRun() {
+const object = document.getElementById("object");
+const rabbit = document.getElementById("rabbit");
+const cursor = document.getElementById("cursor");
 
-      const x =
-        (Math.random() - .5) *
-        Math.min(window.innerWidth * .75, 700);
+const number = document.getElementById("number");
 
-      const y =
-        (Math.random() - .5) *
-        Math.min(window.innerHeight * .65, 500);
+const message =
+  document.getElementById("message");
 
-      const rotation =
-        (Math.random() - .5) * 35;
+const second =
+  document.getElementById("second");
 
-      rabbit.style.setProperty("--rx", x);
-      rabbit.style.setProperty("--ry", y);
-      rabbit.style.setProperty("--rr", rotation + "deg");
+const close =
+  document.getElementById("close");
 
-      status.textContent = "MOVING";
 
-      whisper.textContent =
-        Math.random() > .5
-        ? "you almost had it"
-        : "it saw you";
+/* -----------------------------
+   CURSOR
+----------------------------- */
 
-      setTimeout(function() {
-        status.textContent = "UNFOUND";
-      }, 1600);
+document.addEventListener(
+  "mousemove",
+  function(e) {
+
+    cursor.style.left =
+      e.clientX + "px";
+
+    cursor.style.top =
+      e.clientY + "px";
+
+
+    /* object reacts to visitor */
+
+    const x =
+      (e.clientX / window.innerWidth - .5);
+
+    const y =
+      (e.clientY / window.innerHeight - .5);
+
+
+    object.style.transform =
+      `
+      translate(
+        calc(-50% + ${x * 25}px),
+        calc(-50% + ${y * 25}px)
+      )
+      rotate(${x * 4 - 8}deg)
+      `;
+
+
+    /* rabbit watches */
+
+    rabbit.style.transform =
+      `
+      translate(
+        ${x * 35}px,
+        ${y * 20}px
+      )
+      `;
+
+  }
+);
+
+
+/* -----------------------------
+   NUMBER
+----------------------------- */
+
+number.addEventListener(
+  "mouseenter",
+  function() {
+
+    message.classList.add("visible");
+
+  }
+);
+
+number.addEventListener(
+  "mouseleave",
+  function() {
+
+    message.classList.remove("visible");
+
+  }
+);
+
+
+/* -----------------------------
+   NUMBER CLICK
+----------------------------- */
+
+number.addEventListener(
+  "click",
+  function() {
+
+    second.classList.add("active");
+
+  }
+);
+
+
+/* -----------------------------
+   CLOSE SECOND ROOM
+----------------------------- */
+
+close.addEventListener(
+  "click",
+  function() {
+
+    second.classList.remove("active");
+
+  }
+);
+
+
+/* -----------------------------
+   RABBIT MOVES
+----------------------------- */
+
+setInterval(
+  function() {
+
+    const x =
+      (Math.random() - .5) * 60;
+
+    const y =
+      (Math.random() - .5) * 40;
+
+    rabbit.style.transform =
+      `
+      translate(${x}px, ${y}px)
+      `;
+
+  },
+  4500
+);
+
+
+/* -----------------------------
+   SECRET KEY
+----------------------------- */
+
+document.addEventListener(
+  "keydown",
+  function(e) {
+
+    if (e.key.toLowerCase() === "r") {
+
+      second.classList.add("active");
 
     }
 
+  }
+);
 
-    /*
-      Every so often, the little sentence changes.
-    */
-
-    const whispers = [
-      "something is moving",
-      "not everything is here",
-      "you were not supposed to see this",
-      "keep looking",
-      "nothing happened",
-      "there is another room",
-      "the rabbit was here",
-      "leave it alone"
-    ];
-
-    setInterval(function() {
-
-      whisper.style.opacity = "0";
-
-      setTimeout(function() {
-
-        whisper.textContent =
-          whispers[
-            Math.floor(
-              Math.random() * whispers.length
-            )
-          ];
-
-        whisper.style.opacity = ".55";
-
-      }, 600);
-
-    }, 7000);
-
-
-    /*
-      Secret key.
-      Press I.
-    */
-
-    document.addEventListener("keydown", function(event) {
-
-      if (event.key.toLowerCase() === "i") {
-
-        message.classList.add("visible");
-
-        setTimeout(function() {
-          message.classList.remove("visible");
-        }, 1800);
-
-      }
-
-    });
-
-
-    /*
-      Rabbit occasionally moves on its own.
-    */
-
-    setInterval(function() {
-
-      if (Math.random() < .7) {
-        rabbitRun();
-      }
-
-    }, 11000);
-
-  </script>
+</script>
 
 </body>
 </html>
