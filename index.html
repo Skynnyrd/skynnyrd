@@ -2,98 +2,68 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SKYNNYRD</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title></title>
 
 <style>
-  * {
-    box-sizing: border-box;
-  }
+* {
+  box-sizing: border-box;
+}
 
-  html,
-  body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #050505;
-  }
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0b0b0a;
+}
 
-  body {
-    cursor: none;
-    font-family: Arial, Helvetica, sans-serif;
-  }
+body {
+  touch-action: none;
+  cursor: none;
+}
 
-  canvas {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
+canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
 
-  .label {
-    position: fixed;
-    left: 50%;
-    bottom: 4vh;
-    transform: translateX(-50%);
-    color: rgba(255,255,255,.35);
-    font-family: monospace;
-    font-size: 9px;
-    letter-spacing: .35em;
-    user-select: none;
-    pointer-events: none;
-    transition: opacity 1s;
-  }
+/* extremely quiet interface */
 
-  .title {
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%,-50%);
-    color: white;
-    font-size: clamp(45px, 10vw, 150px);
-    font-weight: 700;
-    letter-spacing: -.08em;
-    pointer-events: none;
-    user-select: none;
-    opacity: 0;
-    mix-blend-mode: difference;
-    transition: opacity 2s;
-  }
+.mark {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.22);
+  pointer-events: none;
+  z-index: 5;
+}
 
+.cursor {
+  position: fixed;
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(255,255,255,.6);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%,-50%);
+  z-index: 10;
+  mix-blend-mode: difference;
+}
+
+@media (pointer: coarse) {
   .cursor {
-    position: fixed;
-    width: 18px;
-    height: 18px;
-    border: 1px solid rgba(255,255,255,.8);
-    border-radius: 50%;
-    transform: translate(-50%,-50%);
-    pointer-events: none;
-    z-index: 20;
-    mix-blend-mode: difference;
-    transition:
-      width .2s,
-      height .2s;
+    display: none;
   }
-
-  .found {
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%,-50%);
-    color: white;
-    font-family: monospace;
-    font-size: 10px;
-    letter-spacing: .4em;
-    opacity: 0;
-    pointer-events: none;
-    z-index: 10;
-    transition: opacity 1s;
-  }
-
-  .found.visible {
-    opacity: 1;
-  }
+}
 </style>
 </head>
 
@@ -101,19 +71,10 @@
 
 <canvas id="canvas"></canvas>
 
+<div class="mark"></div>
+
 <div class="cursor" id="cursor"></div>
 
-<div class="title" id="title">
-  SKYNNYRD
-</div>
-
-<div class="found" id="found">
-  YOU FOUND IT
-</div>
-
-<div class="label" id="label">
-  TOUCH IT
-</div>
 
 <script>
 
@@ -126,63 +87,72 @@ const ctx =
 const cursor =
   document.getElementById("cursor");
 
-const title =
-  document.getElementById("title");
 
-const found =
-  document.getElementById("found");
-
-const label =
-  document.getElementById("label");
+let W;
+let H;
+let DPR;
 
 
-let width;
-let height;
+/* ---------------------------------------
+   INPUT
+--------------------------------------- */
 
-let mouse = {
-  x: -1000,
-  y: -1000,
-  down: false
+const pointer = {
+  x: 0,
+  y: 0,
+  active: false,
+  down: false,
+  strength: 0
 };
+
+
+/* ---------------------------------------
+   OBJECT
+--------------------------------------- */
 
 let particles = [];
 
-let revealed = false;
+const PARTICLES = 1100;
 
 
-/* --------------------------------
+/* ---------------------------------------
    RESIZE
--------------------------------- */
+--------------------------------------- */
 
 function resize() {
 
-  width =
-    canvas.width =
-      window.innerWidth *
-      devicePixelRatio;
+  W = window.innerWidth;
+  H = window.innerHeight;
 
-  height =
-    canvas.height =
-      window.innerHeight *
-      devicePixelRatio;
+  DPR =
+    Math.min(
+      window.devicePixelRatio || 1,
+      2
+    );
+
+  canvas.width =
+    W * DPR;
+
+  canvas.height =
+    H * DPR;
 
   canvas.style.width =
-    window.innerWidth + "px";
+    W + "px";
 
   canvas.style.height =
-    window.innerHeight + "px";
+    H + "px";
 
   ctx.setTransform(
-    devicePixelRatio,
+    DPR,
     0,
     0,
-    devicePixelRatio,
+    DPR,
     0,
     0
   );
-}
 
-resize();
+  createObject();
+}
 
 window.addEventListener(
   "resize",
@@ -190,179 +160,255 @@ window.addEventListener(
 );
 
 
-/* --------------------------------
-   CREATE PARTICLES
--------------------------------- */
+/* ---------------------------------------
+   CREATE THE FORM
+--------------------------------------- */
 
-function createParticles() {
+function createObject() {
 
   particles = [];
 
-  const cx =
-    window.innerWidth / 2;
+  const cx = W / 2;
+  const cy = H / 2;
 
-  const cy =
-    window.innerHeight / 2;
+  const scale =
+    Math.min(W,H);
 
-  const radius =
-    Math.min(
-      window.innerWidth,
-      window.innerHeight
-    ) * .34;
+  const rx =
+    scale * .27;
 
-  const count = 900;
+  const ry =
+    scale * .34;
+
 
   for (
     let i = 0;
-    i < count;
+    i < PARTICLES;
     i++
   ) {
 
-    const angle =
+    const a =
       Math.random() *
       Math.PI * 2;
 
-    const distance =
+    /*
+      biased distribution:
+      more mass toward the outer skin
+    */
+
+    const r =
       Math.pow(
         Math.random(),
-        .55
-      ) * radius;
+        .48
+      );
+
+
+    /*
+      irregular organic boundary
+    */
+
+    const distortion =
+      1 +
+      Math.sin(a * 3.0) * .08 +
+      Math.sin(a * 7.0) * .035;
+
 
     const x =
       cx +
-      Math.cos(angle) *
-      distance;
+      Math.cos(a) *
+      rx *
+      r *
+      distortion;
 
     const y =
       cy +
-      Math.sin(angle) *
-      distance;
+      Math.sin(a) *
+      ry *
+      r *
+      distortion;
+
 
     particles.push({
 
-      x: x,
-      y: y,
+      x,
+      y,
 
-      ox: x,
-      oy: y,
+      homeX: x,
+      homeY: y,
 
       vx: 0,
       vy: 0,
 
       size:
-        Math.random() *
-        1.8 + .3,
+        .35 +
+        Math.random() * 1.5,
+
+      alpha:
+        .12 +
+        Math.random() * .48,
 
       phase:
-        Math.random() *
-        Math.PI * 2
+        Math.random() * Math.PI * 2,
+
+      speed:
+        .15 +
+        Math.random() * .45
 
     });
 
   }
 }
 
-createParticles();
 
+/* ---------------------------------------
+   POINTER
+--------------------------------------- */
 
-/* --------------------------------
-   MOUSE
--------------------------------- */
+function movePointer(x,y) {
+
+  pointer.x = x;
+  pointer.y = y;
+  pointer.active = true;
+
+  if (cursor) {
+
+    cursor.style.left =
+      x + "px";
+
+    cursor.style.top =
+      y + "px";
+
+  }
+}
+
 
 window.addEventListener(
   "mousemove",
   function(e) {
 
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-
-    cursor.style.left =
-      mouse.x + "px";
-
-    cursor.style.top =
-      mouse.y + "px";
+    movePointer(
+      e.clientX,
+      e.clientY
+    );
 
   }
 );
+
 
 window.addEventListener(
   "mousedown",
   function() {
 
-    mouse.down = true;
-
-    cursor.style.width = "34px";
-    cursor.style.height = "34px";
+    pointer.down = true;
 
   }
 );
+
 
 window.addEventListener(
   "mouseup",
   function() {
 
-    mouse.down = false;
-
-    cursor.style.width = "18px";
-    cursor.style.height = "18px";
+    pointer.down = false;
 
   }
 );
 
 
-/* --------------------------------
-   THE HIDDEN OBJECT
--------------------------------- */
+/* ---------------------------------------
+   TOUCH
+--------------------------------------- */
 
-const secretX =
-  window.innerWidth / 2 + 80;
+window.addEventListener(
+  "touchstart",
+  function(e) {
 
-const secretY =
-  window.innerHeight / 2 - 40;
+    const touch =
+      e.touches[0];
+
+    movePointer(
+      touch.clientX,
+      touch.clientY
+    );
+
+    pointer.down = true;
+
+  },
+  { passive: false }
+);
 
 
-/* --------------------------------
-   ANIMATION
--------------------------------- */
+window.addEventListener(
+  "touchmove",
+  function(e) {
 
-function animate(time) {
+    e.preventDefault();
+
+    const touch =
+      e.touches[0];
+
+    movePointer(
+      touch.clientX,
+      touch.clientY
+    );
+
+  },
+  { passive: false }
+);
+
+
+window.addEventListener(
+  "touchend",
+  function() {
+
+    pointer.down = false;
+
+  }
+);
+
+
+/* ---------------------------------------
+   DRAW
+--------------------------------------- */
+
+function draw(time) {
 
   const t =
     time * .001;
 
-  ctx.clearRect(
+
+  /*
+    background
+  */
+
+  ctx.fillStyle =
+    "#0b0b0a";
+
+  ctx.fillRect(
     0,
     0,
-    window.innerWidth,
-    window.innerHeight
+    W,
+    H
   );
 
 
-  const cx =
-    window.innerWidth / 2;
-
-  const cy =
-    window.innerHeight / 2;
-
-
-  /* dark breathing background */
+  /*
+    extremely subtle atmospheric glow
+  */
 
   const glow =
     ctx.createRadialGradient(
-      cx,
-      cy,
+      W/2,
+      H/2,
       0,
-      cx,
-      cy,
-      Math.min(
-        window.innerWidth,
-        window.innerHeight
-      ) * .55
+      W/2,
+      H/2,
+      Math.min(W,H) * .55
     );
 
   glow.addColorStop(
     0,
-    "rgba(255,255,255,.035)"
+    "rgba(255,255,255,.025)"
   );
 
   glow.addColorStop(
@@ -376,12 +422,18 @@ function animate(time) {
   ctx.fillRect(
     0,
     0,
-    window.innerWidth,
-    window.innerHeight
+    W,
+    H
   );
 
 
-  /* particles */
+  /*
+    object physics
+  */
+
+  let nearest =
+    Infinity;
+
 
   for (
     let i = 0;
@@ -394,90 +446,145 @@ function animate(time) {
 
 
     /*
-      organic breathing
+      living movement
     */
 
     const breathing =
       Math.sin(
-        t * .7 +
+        t * p.speed +
         p.phase
-      ) * .25;
-
-
-    const targetX =
-      p.ox +
-      Math.cos(
-        p.phase + t * .2
-      ) * breathing;
-
-    const targetY =
-      p.oy +
-      Math.sin(
-        p.phase + t * .2
-      ) * breathing;
-
-
-    /*
-      mouse force
-    */
-
-    const dx =
-      p.x - mouse.x;
-
-    const dy =
-      p.y - mouse.y;
-
-    const distance =
-      Math.sqrt(
-        dx * dx +
-        dy * dy
       );
 
 
-    const influence = 150;
+    const targetX =
+      p.homeX +
+      breathing *
+      Math.sin(p.phase) *
+      2.2;
 
 
-    if (distance < influence) {
+    const targetY =
+      p.homeY +
+      breathing *
+      Math.cos(p.phase) *
+      2.2;
 
-      const force =
-        (1 -
-          distance /
-          influence);
 
-      const angle =
-        Math.atan2(
-          dy,
-          dx
-        );
+    /*
+      mouse interaction
+    */
 
-      p.vx +=
-        Math.cos(angle) *
-        force *
-        (mouse.down ? 2.8 : .9);
+    if (pointer.active) {
 
-      p.vy +=
-        Math.sin(angle) *
-        force *
-        (mouse.down ? 2.8 : .9);
+      const dx =
+        p.x -
+        pointer.x;
+
+      const dy =
+        p.y -
+        pointer.y;
+
+      const d2 =
+        dx*dx +
+        dy*dy;
+
+      const radius =
+        pointer.down
+          ? 190
+          : 125;
+
+
+      if (d2 < radius * radius) {
+
+        const d =
+          Math.sqrt(d2) || 1;
+
+        nearest =
+          Math.min(
+            nearest,
+            d
+          );
+
+
+        const force =
+          (1 - d/radius);
+
+
+        const angle =
+          Math.atan2(
+            dy,
+            dx
+          );
+
+
+        /*
+          holding pushes harder
+        */
+
+        const power =
+          pointer.down
+            ? 2.7
+            : .65;
+
+
+        p.vx +=
+          Math.cos(angle) *
+          force *
+          power;
+
+        p.vy +=
+          Math.sin(angle) *
+          force *
+          power;
+
+      }
 
     }
 
 
     /*
-      return to origin
+      return to original form
     */
 
     p.vx +=
       (targetX - p.x) *
-      .002;
+      .003;
 
     p.vy +=
       (targetY - p.y) *
-      .002;
+      .003;
 
 
-    p.vx *= .94;
-    p.vy *= .94;
+    /*
+      subtle attraction toward center
+      when released
+    */
+
+    if (!pointer.down) {
+
+      const cx =
+        W/2;
+
+      const cy =
+        H/2;
+
+      p.vx +=
+        (cx - p.x) *
+        .000015;
+
+      p.vy +=
+        (cy - p.y) *
+        .000015;
+
+    }
+
+
+    /*
+      friction
+    */
+
+    p.vx *= .935;
+    p.vy *= .935;
 
 
     p.x += p.vx;
@@ -485,19 +592,27 @@ function animate(time) {
 
 
     /*
-      draw
+      draw particle
     */
 
-    const alpha =
-      .18 +
+    const pulse =
       Math.sin(
-        t +
+        t * .8 +
         p.phase
       ) * .12;
 
 
     ctx.fillStyle =
-      `rgba(255,255,255,${alpha})`;
+      `rgba(
+        235,
+        232,
+        225,
+        ${Math.max(
+          .03,
+          p.alpha + pulse
+        )}
+      )`;
+
 
     ctx.beginPath();
 
@@ -515,52 +630,68 @@ function animate(time) {
 
 
   /*
-    Hidden structure.
-
-    Very faint lines connect
-    nearby particles.
+    connect only nearby particles
+    around the disturbed region
   */
 
-  for (
-    let i = 0;
-    i < particles.length;
-    i += 3
+  if (
+    pointer.active &&
+    nearest < 100
   ) {
 
-    const p =
-      particles[i];
+    for (
+      let i = 0;
+      i < particles.length;
+      i += 4
+    ) {
 
-    const dx =
-      p.x - cx;
+      const p =
+        particles[i];
 
-    const dy =
-      p.y - cy;
+      const dx =
+        p.x -
+        pointer.x;
 
-    const distance =
-      Math.sqrt(
-        dx * dx +
-        dy * dy
-      );
+      const dy =
+        p.y -
+        pointer.y;
+
+      const d =
+        Math.sqrt(
+          dx*dx +
+          dy*dy
+        );
 
 
-    if (distance < 170) {
+      if (d < 90) {
 
-      ctx.strokeStyle =
-        "rgba(255,255,255,.025)";
+        ctx.strokeStyle =
+          `rgba(
+            235,
+            232,
+            225,
+            ${(.055 *
+              (1-d/90))}
+          )`;
 
-      ctx.beginPath();
+        ctx.lineWidth =
+          .5;
 
-      ctx.moveTo(
-        p.x,
-        p.y
-      );
+        ctx.beginPath();
 
-      ctx.lineTo(
-        cx,
-        cy
-      );
+        ctx.moveTo(
+          p.x,
+          p.y
+        );
 
-      ctx.stroke();
+        ctx.lineTo(
+          pointer.x,
+          pointer.y
+        );
+
+        ctx.stroke();
+
+      }
 
     }
 
@@ -568,115 +699,52 @@ function animate(time) {
 
 
   /*
-    Check whether visitor
-    has discovered the center.
+    rare internal flash
+
+    Something deep inside the object
+    occasionally becomes visible.
   */
 
-  const centerDistance =
-    Math.sqrt(
-      Math.pow(
-        mouse.x - cx,
-        2
-      ) +
-      Math.pow(
-        mouse.y - cy,
-        2
-      )
+  const flash =
+    Math.sin(t * .17);
+
+  if (flash > .995) {
+
+    const radius =
+      Math.min(W,H) * .055;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      W/2,
+      H/2,
+      radius,
+      0,
+      Math.PI * 2
     );
 
+    ctx.strokeStyle =
+      "rgba(255,255,255,.12)";
 
-  if (
-    centerDistance < 45 &&
-    mouse.down &&
-    !revealed
-  ) {
+    ctx.lineWidth =
+      .6;
 
-    reveal();
+    ctx.stroke();
 
   }
 
 
   requestAnimationFrame(
-    animate
-  );
-}
-
-animate(0);
-
-
-/* --------------------------------
-   REVEAL
--------------------------------- */
-
-function reveal() {
-
-  revealed = true;
-
-  title.style.opacity =
-    "1";
-
-  found.classList.add(
-    "visible"
-  );
-
-  label.style.opacity =
-    "0";
-
-  setTimeout(
-    function() {
-
-      found.classList.remove(
-        "visible"
-      );
-
-    },
-    2200
-  );
-
-  setTimeout(
-    function() {
-
-      title.style.opacity =
-        ".15";
-
-      label.textContent =
-        "KEEP GOING";
-
-      label.style.opacity =
-        ".35";
-
-    },
-    2500
+    draw
   );
 
 }
 
 
-/* --------------------------------
-   RANDOM DISTURBANCES
--------------------------------- */
+resize();
 
-setInterval(
-  function() {
-
-    const p =
-      particles[
-        Math.floor(
-          Math.random() *
-          particles.length
-        )
-      ];
-
-    p.vx +=
-      (Math.random() - .5) *
-      8;
-
-    p.vy +=
-      (Math.random() - .5) *
-      8;
-
-  },
-  1800
+requestAnimationFrame(
+  draw
 );
 
 </script>
