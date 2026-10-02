@@ -3,671 +3,680 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>SKYNNYRD</title>
 
 <style>
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: #080808;
-  color: #e8e5dd;
-}
-
-body {
-  font-family: Arial, Helvetica, sans-serif;
-  cursor: none;
-}
-
-/* --------------------------------
-   THE ROOM
--------------------------------- */
-
-.room {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  background:
-    radial-gradient(
-      ellipse at 50% 48%,
-      #191919 0%,
-      #0a0a0a 48%,
-      #000 100%
-    );
-}
-
-/* subtle texture */
-
-.room::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: .08;
-
-  background:
-    repeating-linear-gradient(
-      0deg,
-      transparent 0px,
-      transparent 2px,
-      white 3px
-    );
-
-  mix-blend-mode: overlay;
-}
-
-/* --------------------------------
-   GIANT OBJECT
--------------------------------- */
-
-.object {
-  position: absolute;
-
-  width: 62vw;
-  height: 62vw;
-
-  max-width: 760px;
-  max-height: 760px;
-
-  left: 50%;
-  top: 50%;
-
-  transform:
-    translate(-50%, -50%)
-    rotate(-8deg);
-
-  border-radius:
-    47% 53% 48% 52% /
-    55% 44% 56% 45%;
-
-  background:
-    radial-gradient(
-      circle at 35% 30%,
-      #333 0%,
-      #151515 35%,
-      #050505 72%
-    );
-
-  box-shadow:
-    inset -60px -80px 140px rgba(0,0,0,.9),
-    inset 30px 30px 80px rgba(255,255,255,.025),
-    0 0 120px rgba(0,0,0,.9);
-
-  transition:
-    transform 2s cubic-bezier(.2,.8,.2,1);
-}
-
-/* object moves with mouse */
-
-.object::before {
-  content: "";
-
-  position: absolute;
-
-  width: 32%;
-  height: 32%;
-
-  left: 28%;
-  top: 24%;
-
-  border-radius: 50%;
-
-  background: #000;
-
-  box-shadow:
-    0 0 70px rgba(255,255,255,.025);
-}
-
-/* --------------------------------
-   SKYNNYRD
--------------------------------- */
-
-.name {
-  position: absolute;
-
-  left: 50%;
-  top: 50%;
-
-  transform:
-    translate(-50%, -50%);
-
-  font-size:
-    clamp(48px, 10vw, 150px);
-
-  font-weight: 700;
-
-  letter-spacing:
-    -.08em;
-
-  color: #e8e5dd;
-
-  mix-blend-mode: difference;
-
-  user-select: none;
-
-  z-index: 5;
-
-  white-space: nowrap;
-}
-
-/* --------------------------------
-   SMALL TEXT
--------------------------------- */
-
-.fragment {
-  position: absolute;
-
-  font-family: monospace;
-
-  font-size: 9px;
-
-  letter-spacing: .12em;
-
-  color: #aaa;
-
-  opacity: .55;
-
-  user-select: none;
-
-  z-index: 10;
-}
-
-.f1 {
-  left: 6vw;
-  top: 9vh;
-}
-
-.f2 {
-  right: 8vw;
-  top: 18vh;
-}
-
-.f3 {
-  left: 12vw;
-  bottom: 18vh;
-}
-
-.f4 {
-  right: 6vw;
-  bottom: 9vh;
-}
-
-/* --------------------------------
-   THE NUMBER
--------------------------------- */
-
-.number {
-  position: absolute;
-
-  right: 14vw;
-  bottom: 24vh;
-
-  font-family: monospace;
-
-  font-size: 14px;
-
-  opacity: .7;
-
-  z-index: 10;
-
-  cursor: none;
-
-  transition:
-    opacity .4s,
-    transform .4s;
-}
-
-.number:hover {
-  opacity: 1;
-  transform: scale(1.5);
-}
-
-/* --------------------------------
-   RABBIT
--------------------------------- */
-
-.rabbit {
-  position: absolute;
-
-  width: 110px;
-  height: 150px;
-
-  left: 18%;
-  top: 55%;
-
-  opacity: .45;
-
-  z-index: 12;
-
-  transition:
-    transform 1.8s cubic-bezier(.2,.8,.2,1),
-    opacity 1s;
-
-  pointer-events: none;
-}
-
-.rabbit svg {
-  width: 100%;
-  height: 100%;
-}
-
-.rabbit path,
-.rabbit circle {
-  fill: none;
-  stroke: #d9d6ce;
-  stroke-width: 1;
-}
-
-.rabbit .eye {
-  fill: #d9d6ce;
-  stroke: none;
-}
-
-/* --------------------------------
-   CURSOR
--------------------------------- */
-
-.cursor {
-  position: fixed;
-
-  width: 14px;
-  height: 14px;
-
-  border:
-    1px solid #fff;
-
-  border-radius: 50%;
-
-  pointer-events: none;
-
-  transform:
-    translate(-50%, -50%);
-
-  z-index: 100;
-
-  mix-blend-mode: difference;
-
-  transition:
-    width .2s,
-    height .2s;
-}
-
-/* --------------------------------
-   HIDDEN MESSAGE
--------------------------------- */
-
-.message {
-  position: absolute;
-
-  left: 50%;
-  top: 50%;
-
-  transform:
-    translate(-50%, -50%);
-
-  font-family: monospace;
-
-  font-size: 10px;
-
-  letter-spacing: .3em;
-
-  opacity: 0;
-
-  pointer-events: none;
-
-  z-index: 50;
-
-  transition:
-    opacity 1s;
-}
-
-.message.visible {
-  opacity: 1;
-}
-
-/* --------------------------------
-   SECOND ROOM
--------------------------------- */
-
-.second {
-  position: fixed;
-
-  inset: 0;
-
-  background: #e3dfd6;
-
-  color: #111;
-
-  opacity: 0;
-
-  pointer-events: none;
-
-  z-index: 200;
-
-  transition:
-    opacity 1.5s;
-}
-
-.second.active {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.second-word {
-  position: absolute;
-
-  left: 5vw;
-  top: 8vh;
-
-  font-size:
-    clamp(50px, 12vw, 180px);
-
-  letter-spacing:
-    -.08em;
-
-  line-height: .8;
-
-  font-weight: 700;
-}
-
-.second-text {
-  position: absolute;
-
-  left: 7vw;
-  bottom: 10vh;
-
-  font-family: monospace;
-
-  font-size: 10px;
-
-  line-height: 1.7;
-}
-
-.close {
-  position: absolute;
-
-  right: 6vw;
-  top: 6vh;
-
-  font-family: monospace;
-
-  font-size: 10px;
-
-  cursor: pointer;
-
-  opacity: .6;
-}
-
-.close:hover {
-  opacity: 1;
-}
-
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #050505;
+  }
+
+  body {
+    cursor: none;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .label {
+    position: fixed;
+    left: 50%;
+    bottom: 4vh;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,.35);
+    font-family: monospace;
+    font-size: 9px;
+    letter-spacing: .35em;
+    user-select: none;
+    pointer-events: none;
+    transition: opacity 1s;
+  }
+
+  .title {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    color: white;
+    font-size: clamp(45px, 10vw, 150px);
+    font-weight: 700;
+    letter-spacing: -.08em;
+    pointer-events: none;
+    user-select: none;
+    opacity: 0;
+    mix-blend-mode: difference;
+    transition: opacity 2s;
+  }
+
+  .cursor {
+    position: fixed;
+    width: 18px;
+    height: 18px;
+    border: 1px solid rgba(255,255,255,.8);
+    border-radius: 50%;
+    transform: translate(-50%,-50%);
+    pointer-events: none;
+    z-index: 20;
+    mix-blend-mode: difference;
+    transition:
+      width .2s,
+      height .2s;
+  }
+
+  .found {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    color: white;
+    font-family: monospace;
+    font-size: 10px;
+    letter-spacing: .4em;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10;
+    transition: opacity 1s;
+  }
+
+  .found.visible {
+    opacity: 1;
+  }
 </style>
 </head>
 
 <body>
 
-<div class="room" id="room">
+<canvas id="canvas"></canvas>
 
-  <div class="object" id="object"></div>
+<div class="cursor" id="cursor"></div>
 
-  <div class="name">
-    SKYNNYRD
-  </div>
-
-  <div class="fragment f1">
-    peaceful visitors
-  </div>
-
-  <div class="fragment f2">
-    something was here
-  </div>
-
-  <div class="fragment f3">
-    do not explain
-  </div>
-
-  <div class="fragment f4">
-    chasing rabbits
-  </div>
-
-  <div class="number" id="number">
-    17
-  </div>
-
-
-  <div class="rabbit" id="rabbit">
-
-    <svg viewBox="0 0 100 150">
-
-      <path d="M40 60 C28 35 28 8 38 5 C48 3 48 34 50 53"/>
-      <path d="M55 53 C58 30 65 4 75 7 C83 12 69 39 64 61"/>
-
-      <path d="
-        M35 58
-        C40 45 60 45 68 58
-        C77 73 66 88 52 91
-        C38 92 29 76 35 58
-      "/>
-
-      <path d="
-        M39 89
-        C20 95 13 112 20 128
-        C27 143 48 145 62 133
-        C72 123 71 105 59 94
-      "/>
-
-      <circle cx="68" cy="112" r="9"/>
-
-      <circle
-        class="eye"
-        cx="60"
-        cy="63"
-        r="2"
-      />
-
-    </svg>
-
-  </div>
-
-
-  <div class="cursor" id="cursor"></div>
-
-  <div class="message" id="message">
-    YOU WEREN'T SUPPOSED TO FIND THIS
-  </div>
-
+<div class="title" id="title">
+  SKYNNYRD
 </div>
 
-
-<!-- SECOND ROOM -->
-
-<div class="second" id="second">
-
-  <div class="second-word">
-    ROOM<br>
-    17
-  </div>
-
-  <div class="second-text">
-
-    there was a door here.<br>
-    there is still a door here.<br><br>
-
-    nobody remembers opening it.
-
-  </div>
-
-  <div class="close" id="close">
-    [ leave ]
-  </div>
-
+<div class="found" id="found">
+  YOU FOUND IT
 </div>
 
+<div class="label" id="label">
+  TOUCH IT
+</div>
 
 <script>
 
-const object = document.getElementById("object");
-const rabbit = document.getElementById("rabbit");
-const cursor = document.getElementById("cursor");
+const canvas =
+  document.getElementById("canvas");
 
-const number = document.getElementById("number");
+const ctx =
+  canvas.getContext("2d");
 
-const message =
-  document.getElementById("message");
+const cursor =
+  document.getElementById("cursor");
 
-const second =
-  document.getElementById("second");
+const title =
+  document.getElementById("title");
 
-const close =
-  document.getElementById("close");
+const found =
+  document.getElementById("found");
+
+const label =
+  document.getElementById("label");
 
 
-/* -----------------------------
-   CURSOR
------------------------------ */
+let width;
+let height;
 
-document.addEventListener(
+let mouse = {
+  x: -1000,
+  y: -1000,
+  down: false
+};
+
+let particles = [];
+
+let revealed = false;
+
+
+/* --------------------------------
+   RESIZE
+-------------------------------- */
+
+function resize() {
+
+  width =
+    canvas.width =
+      window.innerWidth *
+      devicePixelRatio;
+
+  height =
+    canvas.height =
+      window.innerHeight *
+      devicePixelRatio;
+
+  canvas.style.width =
+    window.innerWidth + "px";
+
+  canvas.style.height =
+    window.innerHeight + "px";
+
+  ctx.setTransform(
+    devicePixelRatio,
+    0,
+    0,
+    devicePixelRatio,
+    0,
+    0
+  );
+}
+
+resize();
+
+window.addEventListener(
+  "resize",
+  resize
+);
+
+
+/* --------------------------------
+   CREATE PARTICLES
+-------------------------------- */
+
+function createParticles() {
+
+  particles = [];
+
+  const cx =
+    window.innerWidth / 2;
+
+  const cy =
+    window.innerHeight / 2;
+
+  const radius =
+    Math.min(
+      window.innerWidth,
+      window.innerHeight
+    ) * .34;
+
+  const count = 900;
+
+  for (
+    let i = 0;
+    i < count;
+    i++
+  ) {
+
+    const angle =
+      Math.random() *
+      Math.PI * 2;
+
+    const distance =
+      Math.pow(
+        Math.random(),
+        .55
+      ) * radius;
+
+    const x =
+      cx +
+      Math.cos(angle) *
+      distance;
+
+    const y =
+      cy +
+      Math.sin(angle) *
+      distance;
+
+    particles.push({
+
+      x: x,
+      y: y,
+
+      ox: x,
+      oy: y,
+
+      vx: 0,
+      vy: 0,
+
+      size:
+        Math.random() *
+        1.8 + .3,
+
+      phase:
+        Math.random() *
+        Math.PI * 2
+
+    });
+
+  }
+}
+
+createParticles();
+
+
+/* --------------------------------
+   MOUSE
+-------------------------------- */
+
+window.addEventListener(
   "mousemove",
   function(e) {
 
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+
     cursor.style.left =
-      e.clientX + "px";
+      mouse.x + "px";
 
     cursor.style.top =
-      e.clientY + "px";
+      mouse.y + "px";
 
+  }
+);
 
-    /* object reacts to visitor */
+window.addEventListener(
+  "mousedown",
+  function() {
 
-    const x =
-      (e.clientX / window.innerWidth - .5);
+    mouse.down = true;
 
-    const y =
-      (e.clientY / window.innerHeight - .5);
+    cursor.style.width = "34px";
+    cursor.style.height = "34px";
 
+  }
+);
 
-    object.style.transform =
-      `
-      translate(
-        calc(-50% + ${x * 25}px),
-        calc(-50% + ${y * 25}px)
-      )
-      rotate(${x * 4 - 8}deg)
-      `;
+window.addEventListener(
+  "mouseup",
+  function() {
 
+    mouse.down = false;
 
-    /* rabbit watches */
-
-    rabbit.style.transform =
-      `
-      translate(
-        ${x * 35}px,
-        ${y * 20}px
-      )
-      `;
+    cursor.style.width = "18px";
+    cursor.style.height = "18px";
 
   }
 );
 
 
-/* -----------------------------
-   NUMBER
------------------------------ */
+/* --------------------------------
+   THE HIDDEN OBJECT
+-------------------------------- */
 
-number.addEventListener(
-  "mouseenter",
-  function() {
+const secretX =
+  window.innerWidth / 2 + 80;
 
-    message.classList.add("visible");
+const secretY =
+  window.innerHeight / 2 - 40;
+
+
+/* --------------------------------
+   ANIMATION
+-------------------------------- */
+
+function animate(time) {
+
+  const t =
+    time * .001;
+
+  ctx.clearRect(
+    0,
+    0,
+    window.innerWidth,
+    window.innerHeight
+  );
+
+
+  const cx =
+    window.innerWidth / 2;
+
+  const cy =
+    window.innerHeight / 2;
+
+
+  /* dark breathing background */
+
+  const glow =
+    ctx.createRadialGradient(
+      cx,
+      cy,
+      0,
+      cx,
+      cy,
+      Math.min(
+        window.innerWidth,
+        window.innerHeight
+      ) * .55
+    );
+
+  glow.addColorStop(
+    0,
+    "rgba(255,255,255,.035)"
+  );
+
+  glow.addColorStop(
+    1,
+    "rgba(0,0,0,0)"
+  );
+
+  ctx.fillStyle =
+    glow;
+
+  ctx.fillRect(
+    0,
+    0,
+    window.innerWidth,
+    window.innerHeight
+  );
+
+
+  /* particles */
+
+  for (
+    let i = 0;
+    i < particles.length;
+    i++
+  ) {
+
+    const p =
+      particles[i];
+
+
+    /*
+      organic breathing
+    */
+
+    const breathing =
+      Math.sin(
+        t * .7 +
+        p.phase
+      ) * .25;
+
+
+    const targetX =
+      p.ox +
+      Math.cos(
+        p.phase + t * .2
+      ) * breathing;
+
+    const targetY =
+      p.oy +
+      Math.sin(
+        p.phase + t * .2
+      ) * breathing;
+
+
+    /*
+      mouse force
+    */
+
+    const dx =
+      p.x - mouse.x;
+
+    const dy =
+      p.y - mouse.y;
+
+    const distance =
+      Math.sqrt(
+        dx * dx +
+        dy * dy
+      );
+
+
+    const influence = 150;
+
+
+    if (distance < influence) {
+
+      const force =
+        (1 -
+          distance /
+          influence);
+
+      const angle =
+        Math.atan2(
+          dy,
+          dx
+        );
+
+      p.vx +=
+        Math.cos(angle) *
+        force *
+        (mouse.down ? 2.8 : .9);
+
+      p.vy +=
+        Math.sin(angle) *
+        force *
+        (mouse.down ? 2.8 : .9);
+
+    }
+
+
+    /*
+      return to origin
+    */
+
+    p.vx +=
+      (targetX - p.x) *
+      .002;
+
+    p.vy +=
+      (targetY - p.y) *
+      .002;
+
+
+    p.vx *= .94;
+    p.vy *= .94;
+
+
+    p.x += p.vx;
+    p.y += p.vy;
+
+
+    /*
+      draw
+    */
+
+    const alpha =
+      .18 +
+      Math.sin(
+        t +
+        p.phase
+      ) * .12;
+
+
+    ctx.fillStyle =
+      `rgba(255,255,255,${alpha})`;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      p.x,
+      p.y,
+      p.size,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
 
   }
-);
-
-number.addEventListener(
-  "mouseleave",
-  function() {
-
-    message.classList.remove("visible");
-
-  }
-);
 
 
-/* -----------------------------
-   NUMBER CLICK
------------------------------ */
+  /*
+    Hidden structure.
 
-number.addEventListener(
-  "click",
-  function() {
+    Very faint lines connect
+    nearby particles.
+  */
 
-    second.classList.add("active");
+  for (
+    let i = 0;
+    i < particles.length;
+    i += 3
+  ) {
 
-  }
-);
+    const p =
+      particles[i];
 
+    const dx =
+      p.x - cx;
 
-/* -----------------------------
-   CLOSE SECOND ROOM
------------------------------ */
+    const dy =
+      p.y - cy;
 
-close.addEventListener(
-  "click",
-  function() {
-
-    second.classList.remove("active");
-
-  }
-);
-
-
-/* -----------------------------
-   RABBIT MOVES
------------------------------ */
-
-setInterval(
-  function() {
-
-    const x =
-      (Math.random() - .5) * 60;
-
-    const y =
-      (Math.random() - .5) * 40;
-
-    rabbit.style.transform =
-      `
-      translate(${x}px, ${y}px)
-      `;
-
-  },
-  4500
-);
+    const distance =
+      Math.sqrt(
+        dx * dx +
+        dy * dy
+      );
 
 
-/* -----------------------------
-   SECRET KEY
------------------------------ */
+    if (distance < 170) {
 
-document.addEventListener(
-  "keydown",
-  function(e) {
+      ctx.strokeStyle =
+        "rgba(255,255,255,.025)";
 
-    if (e.key.toLowerCase() === "r") {
+      ctx.beginPath();
 
-      second.classList.add("active");
+      ctx.moveTo(
+        p.x,
+        p.y
+      );
+
+      ctx.lineTo(
+        cx,
+        cy
+      );
+
+      ctx.stroke();
 
     }
 
   }
+
+
+  /*
+    Check whether visitor
+    has discovered the center.
+  */
+
+  const centerDistance =
+    Math.sqrt(
+      Math.pow(
+        mouse.x - cx,
+        2
+      ) +
+      Math.pow(
+        mouse.y - cy,
+        2
+      )
+    );
+
+
+  if (
+    centerDistance < 45 &&
+    mouse.down &&
+    !revealed
+  ) {
+
+    reveal();
+
+  }
+
+
+  requestAnimationFrame(
+    animate
+  );
+}
+
+animate(0);
+
+
+/* --------------------------------
+   REVEAL
+-------------------------------- */
+
+function reveal() {
+
+  revealed = true;
+
+  title.style.opacity =
+    "1";
+
+  found.classList.add(
+    "visible"
+  );
+
+  label.style.opacity =
+    "0";
+
+  setTimeout(
+    function() {
+
+      found.classList.remove(
+        "visible"
+      );
+
+    },
+    2200
+  );
+
+  setTimeout(
+    function() {
+
+      title.style.opacity =
+        ".15";
+
+      label.textContent =
+        "KEEP GOING";
+
+      label.style.opacity =
+        ".35";
+
+    },
+    2500
+  );
+
+}
+
+
+/* --------------------------------
+   RANDOM DISTURBANCES
+-------------------------------- */
+
+setInterval(
+  function() {
+
+    const p =
+      particles[
+        Math.floor(
+          Math.random() *
+          particles.length
+        )
+      ];
+
+    p.vx +=
+      (Math.random() - .5) *
+      8;
+
+    p.vy +=
+      (Math.random() - .5) *
+      8;
+
+  },
+  1800
 );
 
 </script>
