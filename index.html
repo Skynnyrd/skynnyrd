@@ -17,7 +17,7 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #0b0b0a;
+  background: #0a0908;
 }
 
 body {
@@ -32,29 +32,14 @@ canvas {
   height: 100%;
 }
 
-/* extremely quiet interface */
-
-.mark {
-  position: fixed;
-  left: 50%;
-  bottom: 28px;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: rgba(255,255,255,.22);
-  pointer-events: none;
-  z-index: 5;
-}
-
 .cursor {
   position: fixed;
-  width: 14px;
-  height: 14px;
-  border: 1px solid rgba(255,255,255,.6);
+  width: 12px;
+  height: 12px;
+  border: 1px solid rgba(238,234,222,.38);
   border-radius: 50%;
   pointer-events: none;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
   z-index: 10;
   mix-blend-mode: difference;
 }
@@ -70,49 +55,68 @@ canvas {
 <body>
 
 <canvas id="canvas"></canvas>
-
-<div class="mark"></div>
-
 <div class="cursor" id="cursor"></div>
-
 
 <script>
 
-const canvas =
-  document.getElementById("canvas");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const cursor = document.getElementById("cursor");
 
-const ctx =
-  canvas.getContext("2d");
-
-const cursor =
-  document.getElementById("cursor");
-
-
-let W;
-let H;
-let DPR;
+let W = 0;
+let H = 0;
+let DPR = 1;
+let time = 0;
 
 
 /* ---------------------------------------
-   INPUT
+   POINTER
 --------------------------------------- */
 
 const pointer = {
-  x: 0,
-  y: 0,
+  x: -1000,
+  y: -1000,
   active: false,
-  down: false,
-  strength: 0
+  down: false
 };
 
 
 /* ---------------------------------------
-   OBJECT
+   THE ENVIRONMENT
 --------------------------------------- */
 
-let particles = [];
+let dust = [];
+let grass = [];
+let stones = [];
 
-const PARTICLES = 1100;
+const DUST_COUNT = 180;
+const GRASS_COUNT = 95;
+const STONE_COUNT = 28;
+
+
+/* ---------------------------------------
+   THE VISITOR
+--------------------------------------- */
+
+const visitor = {
+  x: 0,
+  y: 0,
+
+  targetX: 0,
+  targetY: 0,
+
+  vx: 0,
+  vy: 0,
+
+  visible: 0,
+
+  phase: Math.random() * Math.PI * 2,
+
+  fleeing: false,
+  fleeTimer: 0,
+
+  nextMove: 0
+};
 
 
 /* ---------------------------------------
@@ -124,23 +128,16 @@ function resize() {
   W = window.innerWidth;
   H = window.innerHeight;
 
-  DPR =
-    Math.min(
-      window.devicePixelRatio || 1,
-      2
-    );
+  DPR = Math.min(
+    window.devicePixelRatio || 1,
+    2
+  );
 
-  canvas.width =
-    W * DPR;
+  canvas.width = W * DPR;
+  canvas.height = H * DPR;
 
-  canvas.height =
-    H * DPR;
-
-  canvas.style.width =
-    W + "px";
-
-  canvas.style.height =
-    H + "px";
+  canvas.style.width = W + "px";
+  canvas.style.height = H + "px";
 
   ctx.setTransform(
     DPR,
@@ -151,180 +148,171 @@ function resize() {
     0
   );
 
-  createObject();
+  createWorld();
 }
 
-window.addEventListener(
-  "resize",
-  resize
-);
+window.addEventListener("resize", resize);
 
 
 /* ---------------------------------------
-   CREATE THE FORM
+   WORLD CREATION
 --------------------------------------- */
 
-function createObject() {
+function createWorld() {
 
-  particles = [];
+  dust = [];
+  grass = [];
+  stones = [];
 
-  const cx = W / 2;
-  const cy = H / 2;
+  /*
+    Dust / tiny suspended particles.
+    Very sparse.
+  */
 
-  const scale =
-    Math.min(W,H);
+  for (let i = 0; i < DUST_COUNT; i++) {
 
-  const rx =
-    scale * .27;
-
-  const ry =
-    scale * .34;
-
-
-  for (
-    let i = 0;
-    i < PARTICLES;
-    i++
-  ) {
-
-    const a =
-      Math.random() *
-      Math.PI * 2;
-
-    /*
-      biased distribution:
-      more mass toward the outer skin
-    */
-
-    const r =
-      Math.pow(
-        Math.random(),
-        .48
-      );
-
-
-    /*
-      irregular organic boundary
-    */
-
-    const distortion =
-      1 +
-      Math.sin(a * 3.0) * .08 +
-      Math.sin(a * 7.0) * .035;
-
-
-    const x =
-      cx +
-      Math.cos(a) *
-      rx *
-      r *
-      distortion;
-
-    const y =
-      cy +
-      Math.sin(a) *
-      ry *
-      r *
-      distortion;
-
-
-    particles.push({
-
-      x,
-      y,
-
-      homeX: x,
-      homeY: y,
-
-      vx: 0,
-      vy: 0,
-
-      size:
-        .35 +
-        Math.random() * 1.5,
-
-      alpha:
-        .12 +
-        Math.random() * .48,
-
-      phase:
-        Math.random() * Math.PI * 2,
-
-      speed:
-        .15 +
-        Math.random() * .45
-
+    dust.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      size: .2 + Math.random() * .7,
+      alpha: .025 + Math.random() * .09,
+      drift: .08 + Math.random() * .22,
+      phase: Math.random() * Math.PI * 2
     });
-
   }
+
+
+  /*
+    Quiet grass-like marks around
+    the lower environment.
+  */
+
+  for (let i = 0; i < GRASS_COUNT; i++) {
+
+    grass.push({
+      x: Math.random() * W,
+      y: H * (.67 + Math.random() * .29),
+      length: 4 + Math.random() * 15,
+      lean: -1 + Math.random() * 2,
+      alpha: .035 + Math.random() * .08,
+      phase: Math.random() * Math.PI * 2
+    });
+  }
+
+
+  /*
+    Almost invisible stones.
+  */
+
+  for (let i = 0; i < STONE_COUNT; i++) {
+
+    stones.push({
+      x: Math.random() * W,
+      y: H * (.72 + Math.random() * .23),
+      rx: 3 + Math.random() * 13,
+      ry: 1.5 + Math.random() * 5,
+      alpha: .025 + Math.random() * .065,
+      rotation: Math.random() * Math.PI
+    });
+  }
+
+
+  /*
+    Put the visitor somewhere different
+    every time the world is created.
+  */
+
+  visitor.x = W * (.25 + Math.random() * .5);
+  visitor.y = H * (.40 + Math.random() * .30);
+
+  visitor.targetX = visitor.x;
+  visitor.targetY = visitor.y;
+
+  visitor.visible = 0;
+  visitor.fleeing = false;
+  visitor.fleeTimer = 0;
+
+  chooseNewDestination();
 }
 
 
 /* ---------------------------------------
-   POINTER
+   VISITOR MOVEMENT
 --------------------------------------- */
 
-function movePointer(x,y) {
+function chooseNewDestination() {
+
+  /*
+    The visitor prefers the quieter
+    edges of the environment.
+  */
+
+  const edge = Math.random();
+
+  if (edge < .5) {
+
+    visitor.targetX =
+      W * (.12 + Math.random() * .76);
+
+    visitor.targetY =
+      H * (.48 + Math.random() * .38);
+
+  } else {
+
+    visitor.targetX =
+      W * (.08 + Math.random() * .84);
+
+    visitor.targetY =
+      H * (.58 + Math.random() * .25);
+  }
+
+  visitor.nextMove =
+    time +
+    1800 +
+    Math.random() * 5000;
+}
+
+
+/* ---------------------------------------
+   INPUT
+--------------------------------------- */
+
+function movePointer(x, y) {
 
   pointer.x = x;
   pointer.y = y;
   pointer.active = true;
 
-  if (cursor) {
-
-    cursor.style.left =
-      x + "px";
-
-    cursor.style.top =
-      y + "px";
-
-  }
+  cursor.style.left = x + "px";
+  cursor.style.top = y + "px";
 }
 
+window.addEventListener("mousemove", e => {
 
-window.addEventListener(
-  "mousemove",
-  function(e) {
-
-    movePointer(
-      e.clientX,
-      e.clientY
-    );
-
-  }
-);
+  movePointer(
+    e.clientX,
+    e.clientY
+  );
+});
 
 
-window.addEventListener(
-  "mousedown",
-  function() {
+window.addEventListener("mousedown", () => {
 
-    pointer.down = true;
-
-  }
-);
+  pointer.down = true;
+});
 
 
-window.addEventListener(
-  "mouseup",
-  function() {
+window.addEventListener("mouseup", () => {
 
-    pointer.down = false;
+  pointer.down = false;
+});
 
-  }
-);
-
-
-/* ---------------------------------------
-   TOUCH
---------------------------------------- */
 
 window.addEventListener(
   "touchstart",
-  function(e) {
+  e => {
 
-    const touch =
-      e.touches[0];
+    const touch = e.touches[0];
 
     movePointer(
       touch.clientX,
@@ -340,12 +328,11 @@ window.addEventListener(
 
 window.addEventListener(
   "touchmove",
-  function(e) {
+  e => {
 
     e.preventDefault();
 
-    const touch =
-      e.touches[0];
+    const touch = e.touches[0];
 
     movePointer(
       touch.clientX,
@@ -359,7 +346,7 @@ window.addEventListener(
 
 window.addEventListener(
   "touchend",
-  function() {
+  () => {
 
     pointer.down = false;
 
@@ -368,21 +355,176 @@ window.addEventListener(
 
 
 /* ---------------------------------------
-   DRAW
+   VISITOR / HUMAN PROXIMITY
 --------------------------------------- */
 
-function draw(time) {
+function checkVisitorProximity() {
 
-  const t =
-    time * .001;
+  if (!pointer.active) return;
+
+  const dx =
+    visitor.x -
+    pointer.x;
+
+  const dy =
+    visitor.y -
+    pointer.y;
+
+  const distance =
+    Math.sqrt(dx * dx + dy * dy);
 
 
   /*
-    background
+    The visitor notices you.
   */
 
-  ctx.fillStyle =
-    "#0b0b0a";
+  if (
+    distance < 155 &&
+    !visitor.fleeing
+  ) {
+
+    visitor.fleeing = true;
+    visitor.fleeTimer = time;
+
+    /*
+      Run away from the pointer.
+    */
+
+    const angle =
+      Math.atan2(dy, dx);
+
+    visitor.vx +=
+      Math.cos(angle) * 5;
+
+    visitor.vy +=
+      Math.sin(angle) * 5;
+  }
+}
+
+
+/* ---------------------------------------
+   UPDATE VISITOR
+--------------------------------------- */
+
+function updateVisitor() {
+
+  checkVisitorProximity();
+
+
+  if (visitor.fleeing) {
+
+    /*
+      Strong movement immediately after
+      being approached.
+    */
+
+    visitor.vx *= .975;
+    visitor.vy *= .975;
+
+    visitor.x += visitor.vx;
+    visitor.y += visitor.vy;
+
+    /*
+      Slowly become calm again.
+    */
+
+    if (
+      time -
+      visitor.fleeTimer >
+      1300
+    ) {
+
+      visitor.fleeing = false;
+
+      chooseNewDestination();
+    }
+
+  } else {
+
+    /*
+      Quiet wandering.
+    */
+
+    if (time > visitor.nextMove) {
+
+      chooseNewDestination();
+    }
+
+    const dx =
+      visitor.targetX -
+      visitor.x;
+
+    const dy =
+      visitor.targetY -
+      visitor.y;
+
+    visitor.vx += dx * .0008;
+    visitor.vy += dy * .0008;
+
+    visitor.vx *= .965;
+    visitor.vy *= .965;
+
+    visitor.x += visitor.vx;
+    visitor.y += visitor.vy;
+  }
+
+
+  /*
+    The visitor should never completely
+    leave the environment.
+  */
+
+  visitor.x =
+    Math.max(
+      W * .05,
+      Math.min(
+        W * .95,
+        visitor.x
+      )
+    );
+
+  visitor.y =
+    Math.max(
+      H * .32,
+      Math.min(
+        H * .92,
+        visitor.y
+      )
+    );
+
+
+  /*
+    It is rarely visible.
+
+    Most of the time you're not supposed
+    to know whether you actually saw it.
+  */
+
+  const breathing =
+    Math.sin(
+      time * .0013 +
+      visitor.phase
+    );
+
+  const desiredVisibility =
+    visitor.fleeing
+      ? .82
+      : .16 + breathing * .055;
+
+  visitor.visible +=
+    (desiredVisibility -
+      visitor.visible) *
+    .018;
+}
+
+
+/* ---------------------------------------
+   DRAW BACKGROUND
+--------------------------------------- */
+
+function drawBackground() {
+
+  ctx.fillStyle = "#0a0908";
 
   ctx.fillRect(
     0,
@@ -393,359 +535,526 @@ function draw(time) {
 
 
   /*
-    extremely subtle atmospheric glow
+    Very subtle warm atmospheric field.
   */
 
-  const glow =
+  const gradient =
     ctx.createRadialGradient(
-      W/2,
-      H/2,
+      W * .5,
+      H * .54,
       0,
-      W/2,
-      H/2,
-      Math.min(W,H) * .55
+      W * .5,
+      H * .54,
+      Math.max(W,H) * .72
     );
 
-  glow.addColorStop(
+  gradient.addColorStop(
     0,
-    "rgba(255,255,255,.025)"
+    "rgba(102,94,77,.055)"
   );
 
-  glow.addColorStop(
+  gradient.addColorStop(
+    .48,
+    "rgba(54,49,41,.025)"
+  );
+
+  gradient.addColorStop(
+    1,
+    "rgba(0,0,0,0)"
+  );
+
+  ctx.fillStyle = gradient;
+
+  ctx.fillRect(
+    0,
+    0,
+    W,
+    H
+  );
+
+
+  /*
+    Barely visible horizon.
+  */
+
+  const horizon =
+    H * .67;
+
+  const horizonGradient =
+    ctx.createLinearGradient(
+      0,
+      horizon - 80,
+      0,
+      horizon + 100
+    );
+
+  horizonGradient.addColorStop(
+    0,
+    "rgba(180,170,148,0)"
+  );
+
+  horizonGradient.addColorStop(
+    .55,
+    "rgba(180,170,148,.025)"
+  );
+
+  horizonGradient.addColorStop(
     1,
     "rgba(0,0,0,0)"
   );
 
   ctx.fillStyle =
-    glow;
+    horizonGradient;
 
   ctx.fillRect(
     0,
-    0,
+    horizon - 80,
     W,
-    H
+    180
   );
+}
 
 
-  /*
-    object physics
-  */
+/* ---------------------------------------
+   DRAW DUST
+--------------------------------------- */
 
-  let nearest =
-    Infinity;
+function drawDust() {
 
+  for (const d of dust) {
 
-  for (
-    let i = 0;
-    i < particles.length;
-    i++
-  ) {
+    d.y -= d.drift * .018;
 
-    const p =
-      particles[i];
-
-
-    /*
-      living movement
-    */
-
-    const breathing =
+    d.x +=
       Math.sin(
-        t * p.speed +
-        p.phase
-      );
+        time * .00015 +
+        d.phase
+      ) * .025;
 
-
-    const targetX =
-      p.homeX +
-      breathing *
-      Math.sin(p.phase) *
-      2.2;
-
-
-    const targetY =
-      p.homeY +
-      breathing *
-      Math.cos(p.phase) *
-      2.2;
-
-
-    /*
-      mouse interaction
-    */
-
-    if (pointer.active) {
-
-      const dx =
-        p.x -
-        pointer.x;
-
-      const dy =
-        p.y -
-        pointer.y;
-
-      const d2 =
-        dx*dx +
-        dy*dy;
-
-      const radius =
-        pointer.down
-          ? 190
-          : 125;
-
-
-      if (d2 < radius * radius) {
-
-        const d =
-          Math.sqrt(d2) || 1;
-
-        nearest =
-          Math.min(
-            nearest,
-            d
-          );
-
-
-        const force =
-          (1 - d/radius);
-
-
-        const angle =
-          Math.atan2(
-            dy,
-            dx
-          );
-
-
-        /*
-          holding pushes harder
-        */
-
-        const power =
-          pointer.down
-            ? 2.7
-            : .65;
-
-
-        p.vx +=
-          Math.cos(angle) *
-          force *
-          power;
-
-        p.vy +=
-          Math.sin(angle) *
-          force *
-          power;
-
-      }
-
+    if (d.y < -5) {
+      d.y = H + 5;
     }
-
-
-    /*
-      return to original form
-    */
-
-    p.vx +=
-      (targetX - p.x) *
-      .003;
-
-    p.vy +=
-      (targetY - p.y) *
-      .003;
-
-
-    /*
-      subtle attraction toward center
-      when released
-    */
-
-    if (!pointer.down) {
-
-      const cx =
-        W/2;
-
-      const cy =
-        H/2;
-
-      p.vx +=
-        (cx - p.x) *
-        .000015;
-
-      p.vy +=
-        (cy - p.y) *
-        .000015;
-
-    }
-
-
-    /*
-      friction
-    */
-
-    p.vx *= .935;
-    p.vy *= .935;
-
-
-    p.x += p.vx;
-    p.y += p.vy;
-
-
-    /*
-      draw particle
-    */
-
-    const pulse =
-      Math.sin(
-        t * .8 +
-        p.phase
-      ) * .12;
-
 
     ctx.fillStyle =
       `rgba(
-        235,
-        232,
-        225,
-        ${Math.max(
-          .03,
-          p.alpha + pulse
-        )}
+        220,
+        215,
+        201,
+        ${d.alpha}
       )`;
-
 
     ctx.beginPath();
 
     ctx.arc(
-      p.x,
-      p.y,
-      p.size,
+      d.x,
+      d.y,
+      d.size,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
+  }
+}
+
+
+/* ---------------------------------------
+   DRAW GROUND
+--------------------------------------- */
+
+function drawGround() {
+
+  /*
+    Grass marks.
+  */
+
+  for (const g of grass) {
+
+    const sway =
+      Math.sin(
+        time * .0008 +
+        g.phase
+      ) * 1.8;
+
+    ctx.strokeStyle =
+      `rgba(
+        205,
+        199,
+        182,
+        ${g.alpha}
+      )`;
+
+    ctx.lineWidth = .45;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      g.x,
+      g.y
+    );
+
+    ctx.lineTo(
+      g.x +
+      g.lean +
+      sway,
+      g.y -
+      g.length
+    );
+
+    ctx.stroke();
+  }
+
+
+  /*
+    Stones.
+  */
+
+  for (const s of stones) {
+
+    ctx.save();
+
+    ctx.translate(
+      s.x,
+      s.y
+    );
+
+    ctx.rotate(
+      s.rotation
+    );
+
+    ctx.fillStyle =
+      `rgba(
+        185,
+        179,
+        164,
+        ${s.alpha}
+      )`;
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      0,
+      0,
+      s.rx,
+      s.ry,
+      0,
       0,
       Math.PI * 2
     );
 
     ctx.fill();
 
+    ctx.restore();
   }
-
-
-  /*
-    connect only nearby particles
-    around the disturbed region
-  */
-
-  if (
-    pointer.active &&
-    nearest < 100
-  ) {
-
-    for (
-      let i = 0;
-      i < particles.length;
-      i += 4
-    ) {
-
-      const p =
-        particles[i];
-
-      const dx =
-        p.x -
-        pointer.x;
-
-      const dy =
-        p.y -
-        pointer.y;
-
-      const d =
-        Math.sqrt(
-          dx*dx +
-          dy*dy
-        );
-
-
-      if (d < 90) {
-
-        ctx.strokeStyle =
-          `rgba(
-            235,
-            232,
-            225,
-            ${(.055 *
-              (1-d/90))}
-          )`;
-
-        ctx.lineWidth =
-          .5;
-
-        ctx.beginPath();
-
-        ctx.moveTo(
-          p.x,
-          p.y
-        );
-
-        ctx.lineTo(
-          pointer.x,
-          pointer.y
-        );
-
-        ctx.stroke();
-
-      }
-
-    }
-
-  }
-
-
-  /*
-    rare internal flash
-
-    Something deep inside the object
-    occasionally becomes visible.
-  */
-
-  const flash =
-    Math.sin(t * .17);
-
-  if (flash > .995) {
-
-    const radius =
-      Math.min(W,H) * .055;
-
-    ctx.beginPath();
-
-    ctx.arc(
-      W/2,
-      H/2,
-      radius,
-      0,
-      Math.PI * 2
-    );
-
-    ctx.strokeStyle =
-      "rgba(255,255,255,.12)";
-
-    ctx.lineWidth =
-      .6;
-
-    ctx.stroke();
-
-  }
-
-
-  requestAnimationFrame(
-    draw
-  );
-
 }
 
 
+/* ---------------------------------------
+   DRAW VISITOR
+--------------------------------------- */
+
+function drawVisitor() {
+
+  /*
+    The visitor is deliberately ambiguous.
+
+    It is NOT a rabbit illustration.
+
+    It is a small moving silhouette made
+    from soft overlapping forms.
+  */
+
+  const x = visitor.x;
+  const y = visitor.y;
+
+  const scale =
+    Math.min(W,H) * .012;
+
+
+  /*
+    Shadow / contact.
+  */
+
+  ctx.save();
+
+  ctx.translate(
+    x,
+    y
+  );
+
+
+  /*
+    Body.
+  */
+
+  ctx.fillStyle =
+    `rgba(
+      225,
+      220,
+      207,
+      ${visitor.visible * .52}
+    )`;
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    0,
+    0,
+    scale * 1.8,
+    scale * .8,
+    -.08,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+
+  /*
+    Head.
+  */
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    scale * 1.35,
+    -scale * .35,
+    scale * .72,
+    scale * .62,
+    -.18,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+
+  /*
+    Two extremely subtle vertical
+    shapes suggest ears without
+    becoming an obvious rabbit.
+  */
+
+  ctx.fillStyle =
+    `rgba(
+      225,
+      220,
+      207,
+      ${visitor.visible * .40}
+    )`;
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    scale * 1.15,
+    -scale * 1.05,
+    scale * .20,
+    scale * .72,
+    -.16,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    scale * 1.62,
+    -scale * .96,
+    scale * .18,
+    scale * .66,
+    .12,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+
+  /*
+    Soft contact shadow.
+  */
+
+  ctx.fillStyle =
+    `rgba(
+      0,
+      0,
+      0,
+      ${visitor.visible * .25}
+    )`;
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    0,
+    scale * .68,
+    scale * 2.3,
+    scale * .32,
+    0,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+  ctx.restore();
+}
+
+
+/* ---------------------------------------
+   RARE MOVEMENT TRACE
+--------------------------------------- */
+
+function drawTrace() {
+
+  /*
+    When the visitor moves quickly,
+    a tiny ghost of its previous position
+    remains for a fraction of a second.
+  */
+
+  if (!visitor.fleeing) return;
+
+  const speed =
+    Math.sqrt(
+      visitor.vx * visitor.vx +
+      visitor.vy * visitor.vy
+    );
+
+  if (speed < 1.2) return;
+
+  const angle =
+    Math.atan2(
+      visitor.vy,
+      visitor.vx
+    );
+
+  const length =
+    Math.min(
+      speed * 2.8,
+      32
+    );
+
+  ctx.strokeStyle =
+    `rgba(
+      225,
+      220,
+      207,
+      ${visitor.visible * .12}
+    )`;
+
+  ctx.lineWidth = .6;
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    visitor.x -
+    Math.cos(angle) * length,
+    visitor.y -
+    Math.sin(angle) * length
+  );
+
+  ctx.lineTo(
+    visitor.x,
+    visitor.y
+  );
+
+  ctx.stroke();
+}
+
+
+/* ---------------------------------------
+   MAIN LOOP
+--------------------------------------- */
+
+function draw(timestamp) {
+
+  time = timestamp;
+
+  drawBackground();
+
+  drawDust();
+
+  drawGround();
+
+  updateVisitor();
+
+  drawTrace();
+
+  drawVisitor();
+
+
+  /*
+    Pointer interaction remains extremely
+    quiet. No obvious UI response.
+  */
+
+  if (pointer.active) {
+
+    const dx =
+      visitor.x -
+      pointer.x;
+
+    const dy =
+      visitor.y -
+      pointer.y;
+
+    const distance =
+      Math.sqrt(
+        dx * dx +
+        dy * dy
+      );
+
+    /*
+      If you're close, a nearly invisible
+      atmospheric disturbance appears.
+    */
+
+    if (distance < 240) {
+
+      const influence =
+        1 -
+        distance / 240;
+
+      ctx.strokeStyle =
+        `rgba(
+          220,
+          214,
+          198,
+          ${influence * .018}
+        )`;
+
+      ctx.lineWidth = .5;
+
+      ctx.beginPath();
+
+      ctx.arc(
+        visitor.x,
+        visitor.y,
+        8 +
+        influence * 25,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.stroke();
+    }
+  }
+
+
+  requestAnimationFrame(draw);
+}
+
+
+/* ---------------------------------------
+   START
+--------------------------------------- */
+
 resize();
 
-requestAnimationFrame(
-  draw
-);
+requestAnimationFrame(draw);
 
 </script>
 
