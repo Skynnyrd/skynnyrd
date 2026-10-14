@@ -15,16 +15,17 @@
 
     * {
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
     html, body {
       width: 100%;
       height: 100%;
       margin: 0;
+      overflow: hidden;
     }
 
     body {
-      overflow: hidden;
       background: radial-gradient(
         ellipse at 50% 46%,
         #211f1a 0%,
@@ -33,14 +34,15 @@
       );
       display: grid;
       place-items: center;
-      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .room {
       position: relative;
       width: 100%;
       height: 100%;
-      min-height: 0;
+      height: 100dvh;
       display: grid;
       place-items: center;
       isolation: isolate;
@@ -54,15 +56,15 @@
       border-radius: 50%;
       background: radial-gradient(
         circle,
-        rgba(154, 126, 83, 0.085) 0%,
-        rgba(101, 83, 57, 0.035) 36%,
+        rgba(154, 126, 83, .085) 0%,
+        rgba(101, 83, 57, .035) 36%,
         transparent 70%
       );
       filter: blur(28px);
       pointer-events: none;
     }
 
-    /* Desktop: constrain the object to the available height. */
+    /* Desktop: keep the complete object inside the viewport. */
     .artifact {
       position: relative;
       width: min(70vw, 480px);
@@ -74,24 +76,28 @@
       will-change: transform;
     }
 
-    .artifact img {
-      display: block;
+    /* Use a background layer instead of a directly draggable image. */
+    .object-image {
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      background-image: url("object.png");
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: contain;
+      pointer-events: none;
       user-select: none;
+      -webkit-user-select: none;
       -webkit-user-drag: none;
-      filter: contrast(1.035) saturate(.88) brightness(.91);
       animation: breathing 12s ease-in-out infinite;
       transform-origin: center;
     }
 
     @keyframes breathing {
       0%, 100% {
-        transform: scale(1) rotate(-0.35deg);
+        transform: scale(1) rotate(-.35deg);
       }
       50% {
-        transform: scale(1.018) rotate(0.35deg);
+        transform: scale(1.018) rotate(.35deg);
       }
     }
 
@@ -139,7 +145,6 @@
       );
     }
 
-    /* Keep the existing mobile appearance. */
     @media (max-width: 600px) {
       .artifact {
         width: min(96vw, 540px);
@@ -155,7 +160,7 @@
     @media (prefers-reduced-motion: reduce) {
       .grain,
       .artifact,
-      .artifact img {
+      .object-image {
         animation: none;
       }
     }
@@ -166,12 +171,40 @@
   <main class="room">
     <div class="light" aria-hidden="true"></div>
 
-    <div class="artifact">
-      <img src="object.png" alt="" draggable="false">
+    <div class="artifact" aria-hidden="true">
+      <div class="object-image"></div>
     </div>
 
     <div class="vignette" aria-hidden="true"></div>
     <div class="grain" aria-hidden="true"></div>
   </main>
+
+  <script>
+    // Deter casual saving and dragging.
+    document.addEventListener("contextmenu", function (event) {
+      event.preventDefault();
+    });
+
+    document.addEventListener("dragstart", function (event) {
+      event.preventDefault();
+    });
+
+    document.addEventListener("selectstart", function (event) {
+      event.preventDefault();
+    });
+
+    // Block common save and view-source shortcuts where possible.
+    document.addEventListener("keydown", function (event) {
+      const key = event.key.toLowerCase();
+      const modifier = event.ctrlKey || event.metaKey;
+
+      if (
+        modifier &&
+        ["s", "u"].includes(key)
+      ) {
+        event.preventDefault();
+      }
+    });
+  </script>
 </body>
 </html>
