@@ -1,300 +1,185 @@
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#11110f">
-<meta name="description" content="">
-<title></title>
-<style>
-:root{color-scheme:dark}
-*{box-sizing:border-box}
-html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#11110f}
-body{cursor:crosshair;-webkit-tap-highlight-color:transparent}
-canvas{display:block;width:100%;height:100%;touch-action:none}
-#veil{
- position:fixed;inset:0;pointer-events:none;
- background:radial-gradient(ellipse at 50% 48%,transparent 24%,rgba(0,0,0,.16) 74%,rgba(0,0,0,.5) 120%);
- mix-blend-mode:multiply;opacity:.8
-}
-#grain{
- position:fixed;inset:-50%;width:200%;height:200%;pointer-events:none;opacity:.105;
- background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.48'/%3E%3C/svg%3E");
- animation:grain .23s steps(2) infinite
-}
-@keyframes grain{
- 0%{transform:translate(0,0)}
- 25%{transform:translate(1%,-1%)}
- 50%{transform:translate(-1%,1%)}
- 75%{transform:translate(1%,1%)}
- 100%{transform:translate(-1%,-1%)}
-}
-@media(prefers-reduced-motion:reduce){#grain{animation:none}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0b0a">
+  <title></title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      background: #0b0b0a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      overflow: hidden;
+      background:
+        radial-gradient(
+          ellipse at 50% 46%,
+          #211f1a 0%,
+          #121210 35%,
+          #0b0b0a 75%
+        );
+      display: grid;
+      place-items: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .room {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      isolation: isolate;
+      overflow: hidden;
+    }
+
+    /* A faint, uneven pool of light behind the object. */
+    .light {
+      position: absolute;
+      width: min(78vw, 780px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle,
+        rgba(154, 126, 83, 0.085) 0%,
+        rgba(101, 83, 57, 0.035) 36%,
+        transparent 70%
+      );
+      filter: blur(28px);
+      pointer-events: none;
+    }
+
+    .artifact {
+      position: relative;
+      width: min(82vw, 620px);
+      max-height: 88vh;
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      animation: arrival 2.8s ease-out both;
+      will-change: transform;
+    }
+
+    .artifact img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+      filter:
+        contrast(1.035)
+        saturate(.88)
+        brightness(.91);
+      animation: breathing 12s ease-in-out infinite;
+      transform-origin: center;
+    }
+
+    /* Barely moving, as if the object is suspended in the room. */
+    @keyframes breathing {
+      0%, 100% {
+        transform: scale(1) rotate(-0.35deg);
+      }
+      50% {
+        transform: scale(1.018) rotate(0.35deg);
+      }
+    }
+
+    @keyframes arrival {
+      from {
+        opacity: 0;
+        transform: translateY(9px) scale(.975);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Film-like grain, without external assets. */
+    .grain {
+      position: fixed;
+      inset: -50%;
+      width: 200%;
+      height: 200%;
+      pointer-events: none;
+      z-index: 2;
+      opacity: .12;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.48'/%3E%3C/svg%3E");
+      animation: grainShift .24s steps(2) infinite;
+    }
+
+    @keyframes grainShift {
+      0%   { transform: translate(0, 0); }
+      25%  { transform: translate(1%, -1%); }
+      50%  { transform: translate(-1%, 1%); }
+      75%  { transform: translate(1%, 1%); }
+      100% { transform: translate(-1%, -1%); }
+    }
+
+    .vignette {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: radial-gradient(
+        ellipse at center,
+        transparent 35%,
+        rgba(0, 0, 0, .16) 68%,
+        rgba(0, 0, 0, .64) 120%
+      );
+    }
+
+    @media (max-width: 600px) {
+      .artifact {
+        width: min(96vw, 540px);
+        max-height: 78vh;
+      }
+
+      .light {
+        width: 100vw;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .grain,
+      .artifact,
+      .artifact img {
+        animation: none;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<canvas id="world" aria-label="An abstract, moving physical form"></canvas>
-<div id="veil"></div>
-<div id="grain"></div>
+  <main class="room">
+    <div class="light" aria-hidden="true"></div>
 
-<script>
-(()=>{
- const canvas=document.getElementById('world');
- const ctx=canvas.getContext('2d',{alpha:false});
- let w=0,h=0,dpr=1,t=0;
- const pointer={x:0,y:0,tx:0,ty:0,active:false,pressure:0};
- const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
- const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
- const lerp=(a,b,k)=>a+(b-a)*k;
+    <div class="artifact">
+      <img
+        src="object.png"
+        alt=""
+        draggable="false"
+      >
+    </div>
 
- function resize(){
-  dpr=Math.min(devicePixelRatio||1,2);
-  w=innerWidth;h=innerHeight;
-  canvas.width=Math.round(w*dpr);
-  canvas.height=Math.round(h*dpr);
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  pointer.x=pointer.tx=w*.5;
-  pointer.y=pointer.ty=h*.5;
- }
- addEventListener('resize',resize,{passive:true});
- resize();
-
- function move(e){
-  const r=canvas.getBoundingClientRect();
-  pointer.tx=e.clientX-r.left;
-  pointer.ty=e.clientY-r.top;
-  pointer.active=true;
- }
- canvas.addEventListener('pointermove',move,{passive:true});
- canvas.addEventListener('pointerdown',e=>{
-  move(e);pointer.pressure=1;
- });
- addEventListener('pointerup',()=>pointer.pressure=0,{passive:true});
- canvas.addEventListener('pointerleave',()=>{
-  pointer.active=false;
- },{passive:true});
-
- function organicPath(cx,cy,rx,ry,phase,warp=1){
-  const p=new Path2D();
-  const n=180;
-  for(let i=0;i<=n;i++){
-   const a=i/n*Math.PI*2;
-   const wave=Math.sin(a*3+phase)*.055+
-    Math.sin(a*5-phase*1.3)*.025+
-    Math.sin(a*2+phase*.6)*.018;
-   const x=cx+Math.cos(a)*rx*(1+wave*warp);
-   const y=cy+Math.sin(a)*ry*(1+wave*warp)+
-    Math.sin(a*2+phase)*ry*.018;
-   if(i===0)p.moveTo(x,y);
-   else p.lineTo(x,y);
-  }
-  p.closePath();
-  return p;
- }
-
- function drawBackground(){
-  ctx.fillStyle='#11110f';
-  ctx.fillRect(0,0,w,h);
-  const glow=ctx.createRadialGradient(
-   w*.5,h*.47,0,w*.5,h*.47,Math.max(w,h)*.68
-  );
-  glow.addColorStop(0,'#282723');
-  glow.addColorStop(.48,'#191916');
-  glow.addColorStop(1,'#0b0b0a');
-  ctx.fillStyle=glow;
-  ctx.fillRect(0,0,w,h);
-
-  for(let i=0;i<36;i++){
-   const x=((i*173.3+Math.sin(t*.12+i)*18)%w+w)%w;
-   const y=((i*97.7+Math.cos(t*.1+i*2)*22)%h+h)%h;
-   ctx.fillStyle=`rgba(210,200,176,${.025+(i%5)/5*.035})`;
-   ctx.fillRect(x,y,1,1);
-  }
- }
-
- function draw(){
-  t+=reduced?.003:.009;
-  pointer.x=lerp(pointer.x,pointer.tx,.075);
-  pointer.y=lerp(pointer.y,pointer.ty,.075);
-
-  const small=Math.min(w,h);
-  const scale=small<560?.77:1;
-  const cx=w*.5,cy=h*.49;
-  const base=small*.245*scale;
-  const hoverX=pointer.x-cx;
-  const hoverY=pointer.y-cy;
-  const dist=Math.hypot(hoverX,hoverY);
-  const influence=pointer.active?
-   Math.exp(-dist/(base*1.25)):0;
-
-  const recoil=base*.19*influence;
-  const ox=-hoverX/(dist||1)*recoil+
-   Math.sin(t*.73)*base*.025;
-  const oy=-hoverY/(dist||1)*recoil+
-   Math.cos(t*.61)*base*.018;
-  const breathe=reduced?0:Math.sin(t*1.05)*.012;
-  const angle=Math.sin(t*.39)*.075+
-   (pointer.active?clamp(hoverX/(small||1),-.3,.3)*-.08:0);
-
-  drawBackground();
-
-  ctx.save();
-  ctx.translate(cx+ox,cy+oy);
-  ctx.rotate(angle);
-  ctx.scale(1+breathe,1-breathe*.55);
-
-  // A floating shadow with no visible support.
-  ctx.save();
-  ctx.filter='blur(28px)';
-  ctx.fillStyle='rgba(0,0,0,.62)';
-  ctx.beginPath();
-  ctx.ellipse(0,base*.18,base*.72,base*.94,-.24,0,Math.PI*2);
-  ctx.fill();
-  ctx.restore();
-
-  // The outer material.
-  const outer=organicPath(0,0,base*.76,base*1.12,t*.52,1.05);
-  const material=ctx.createLinearGradient(
-   -base*.8,-base,-base*.05,base*1.1
-  );
-  material.addColorStop(0,'#d7d0bd');
-  material.addColorStop(.13,'#89877e');
-  material.addColorStop(.27,'#e7e0cf');
-  material.addColorStop(.43,'#65635c');
-  material.addColorStop(.59,'#c5bca8');
-  material.addColorStop(.77,'#494943');
-  material.addColorStop(.9,'#aaa392');
-  material.addColorStop(1,'#343530');
-  ctx.fillStyle=material;
-  ctx.fill(outer);
-
-  // Uneven highlights create a worn, almost metallic surface.
-  ctx.save();
-  ctx.clip(outer);
-  const sheen=ctx.createLinearGradient(
-   -base*.7,-base*.8,base*.6,base*.85
-  );
-  sheen.addColorStop(0,'rgba(255,250,229,.72)');
-  sheen.addColorStop(.17,'rgba(255,255,245,.05)');
-  sheen.addColorStop(.36,'rgba(0,0,0,.36)');
-  sheen.addColorStop(.52,'rgba(255,255,235,.28)');
-  sheen.addColorStop(.7,'rgba(0,0,0,.4)');
-  sheen.addColorStop(.88,'rgba(246,236,211,.26)');
-  sheen.addColorStop(1,'rgba(0,0,0,.54)');
-  ctx.fillStyle=sheen;
-  ctx.fillRect(-base,-base*1.4,base*2,base*2.8);
-
-  ctx.lineWidth=base*.018;
-  ctx.strokeStyle='rgba(255,249,225,.52)';
-  ctx.stroke(organicPath(
-   -base*.035,-base*.015,base*.735,base*1.095,t*.52+.2,.9
-  ));
-  ctx.restore();
-
-  // An off-axis cavity worn into the surface.
-  const hole=organicPath(
-   base*.035,-base*.035,base*.32,base*.56,t*.46+1.8,1.2
-  );
-  ctx.save();
-  ctx.shadowColor='rgba(0,0,0,.9)';
-  ctx.shadowBlur=base*.11;
-  const cavity=ctx.createRadialGradient(
-   base*.04,-base*.16,base*.03,
-   base*.04,-base*.05,base*.68
-  );
-  cavity.addColorStop(0,'#030303');
-  cavity.addColorStop(.48,'#090908');
-  cavity.addColorStop(.7,'#282722');
-  cavity.addColorStop(1,'#5d5a50');
-  ctx.fillStyle=cavity;
-  ctx.fill(hole);
-  ctx.restore();
-
-  ctx.lineWidth=base*.026;
-  ctx.strokeStyle='rgba(7,7,6,.88)';
-  ctx.stroke(hole);
-  ctx.lineWidth=base*.008;
-  ctx.strokeStyle='rgba(231,221,198,.47)';
-  ctx.stroke(organicPath(
-   base*.015,-base*.025,base*.342,base*.585,t*.46+1.72,.95
-  ));
-
-  // A dim glint, occasionally visible far inside.
-  const glint=Math.pow(Math.max(0,Math.sin(t*.31+1.4)),12)*
-   (pointer.active?.25+influence:.45);
-
-  if(glint>.018){
-   const gx=base*.095+Math.sin(t*.2)*base*.045;
-   const gy=-base*.28+Math.cos(t*.24)*base*.04;
-   const g=ctx.createRadialGradient(gx,gy,0,gx,gy,base*.16);
-   g.addColorStop(0,`rgba(183,91,52,${glint})`);
-   g.addColorStop(.22,`rgba(117,49,31,${glint*.5})`);
-   g.addColorStop(1,'rgba(60,24,17,0)');
-   ctx.fillStyle=g;
-   ctx.fillRect(-base,-base*1.3,base*2,base*2.6);
-   ctx.fillStyle=`rgba(235,156,102,${glint*.8})`;
-   ctx.beginPath();
-   ctx.ellipse(gx,gy,base*.012,base*.035,-.4,0,Math.PI*2);
-   ctx.fill();
-  }
-
-  // Fine irregular surface scoring.
-  ctx.save();
-  ctx.globalCompositeOperation='multiply';
-  for(let i=0;i<22;i++){
-   const a=i*2.399+t*.035;
-   const rr=.48+((i*37)%41)/100;
-   const x=Math.cos(a)*base*.64*rr;
-   const y=Math.sin(a)*base*.95*rr;
-   ctx.strokeStyle=`rgba(28,27,23,${.06+(i%4)*.025})`;
-   ctx.lineWidth=base*.0025;
-   ctx.beginPath();
-   ctx.moveTo(x,y);
-   ctx.quadraticCurveTo(
-    x+Math.sin(a)*base*.035,
-    y+Math.cos(a)*base*.02,
-    x+Math.sin(a+.3)*base*.055,
-    y+Math.cos(a+.3)*base*.04
-   );
-   ctx.stroke();
-  }
-  ctx.restore();
-
-  // The object darkens slightly when approached or touched.
-  if(pointer.pressure>0||influence>.48){
-   const amount=pointer.pressure>0?.06:.025*influence;
-   ctx.save();
-   ctx.globalCompositeOperation='source-atop';
-   ctx.fillStyle=`rgba(0,0,0,${amount})`;
-   ctx.fillRect(-base,-base*1.3,base*2,base*2.6);
-   ctx.restore();
-  }
-
-  ctx.restore();
-
-  // Peripheral marks provide scale without becoming interface elements.
-  ctx.globalAlpha=.11;
-  ctx.strokeStyle='#c7c0ad';
-  ctx.lineWidth=.6;
-  const mark=small*.012;
-  for(const [x,y,s] of [
-   [w*.105,h*.19,1],
-   [w*.88,h*.76,-1],
-   [w*.82,h*.21,1],
-   [w*.16,h*.81,-1]
-  ]){
-   ctx.beginPath();
-   ctx.moveTo(x,y);ctx.lineTo(x+mark*s,y);
-   ctx.moveTo(x,y);ctx.lineTo(x,y+mark*s);
-   ctx.stroke();
-  }
-  ctx.globalAlpha=1;
-  requestAnimationFrame(draw);
- }
-
- draw();
-})();
-</script>
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+  </main>
 </body>
 </html>
