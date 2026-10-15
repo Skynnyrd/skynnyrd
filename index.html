@@ -3,205 +3,146 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b0b0a">
-  <title>Peaceful Visitors Chasing Rabbits</title>
-
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%230b0b0a'/%3E%3Cpath d='M34 9 C29 17 42 20 31 29 S23 42 34 54' fill='none' stroke='%23b18a55' stroke-width='2.1' stroke-linecap='round'/%3E%3Cpath d='M40 14 C47 23 30 29 39 37 S44 45 35 51' fill='none' stroke='%237a6447' stroke-width='1.1' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='31' r='2' fill='%23d7ae70' opacity='.8'/%3E%3C/svg%3E">
+  <title></title>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      width: 100%;
-      height: 100%;
-      min-height: 100%;
-      margin: 0;
-      overflow: hidden;
+    :root {
+      color-scheme: dark;
       background: #0b0b0a;
     }
 
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+
     body {
-      position: relative;
-      isolation: isolate;
       background: radial-gradient(
-        ellipse at 50% 44%,
+        ellipse at 50% 46%,
         #211f1a 0%,
-        #151411 36%,
-        #0b0b0a 76%
+        #121210 35%,
+        #0b0b0a 75%
       );
+      display: grid;
+      place-items: center;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
-    .atmosphere {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-      background: radial-gradient(
-        ellipse at 50% 47%,
-        rgba(183, 126, 57, 0.035) 0%,
-        rgba(183, 126, 57, 0.012) 27%,
-        transparent 58%
-      );
-      animation: atmosphere 16s ease-in-out infinite alternate;
+    .room {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      display: grid;
+      place-items: center;
+      isolation: isolate;
+      overflow: hidden;
     }
 
-    .artifact {
+    .light {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      width: min(78vw, 780px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle,
+        rgba(154, 126, 83, .085) 0%,
+        rgba(101, 83, 57, .035) 36%,
+        transparent 70%
+      );
+      filter: blur(28px);
+      pointer-events: none;
+    }
+
+    /* Desktop: keep the complete object inside the viewport. */
+    .artifact {
+      position: relative;
       width: min(70vw, 480px);
       height: 88vh;
       height: 88dvh;
-      transform: translate(-50%, -50%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      animation: arrival 2.4s ease both;
-    }
-
-    .living-surface {
-      position: absolute;
-      inset: 0;
-      transform-origin: center;
-      animation: breathing 12s ease-in-out infinite;
+      display: grid;
+      place-items: center;
+      animation: arrival 2.8s ease-out both;
       will-change: transform;
     }
 
+    /* Use a background layer instead of a directly draggable image. */
     .object-image {
-      position: absolute;
-      inset: 0;
       width: 100%;
       height: 100%;
       background-image: url("object.png");
-      background-size: contain;
       background-position: center;
       background-repeat: no-repeat;
+      background-size: contain;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-user-drag: none;
+      animation: breathing 12s ease-in-out infinite;
       transform-origin: center;
-      animation: slow-turn 19s ease-in-out infinite;
-      will-change: transform;
     }
 
-    /* Desktop-only subtle material distortion. */
-    @media (min-width: 601px) {
-      .object-image {
-        filter: url(#living-distortion);
+    @keyframes breathing {
+      0%, 100% {
+        transform: scale(1) rotate(-.35deg);
+      }
+      50% {
+        transform: scale(1.018) rotate(.35deg);
       }
     }
 
-    .inner-light {
-      position: absolute;
-      left: 50%;
-      top: 47%;
-      width: 32%;
-      aspect-ratio: 1;
-      transform: translate(-50%, -50%);
-      border-radius: 50%;
-      pointer-events: none;
-      background: radial-gradient(
-        circle,
-        rgba(218, 150, 66, 0.105) 0%,
-        rgba(184, 112, 40, 0.065) 23%,
-        rgba(156, 93, 35, 0.025) 48%,
-        transparent 72%
-      );
-      mix-blend-mode: screen;
-      filter: blur(7px);
-      animation: ember 8s ease-in-out infinite;
-      will-change: opacity, transform;
+    @keyframes arrival {
+      from {
+        opacity: 0;
+        transform: translateY(9px) scale(.975);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
 
     .grain {
       position: fixed;
-      inset: -25%;
-      width: 150%;
-      height: 150%;
-      z-index: 4;
+      inset: -50%;
+      width: 200%;
+      height: 200%;
       pointer-events: none;
-      opacity: 0.09;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.24'/%3E%3C/svg%3E");
-      background-size: 180px 180px;
-      animation: grain-shift 0.5s steps(2) infinite;
+      z-index: 2;
+      opacity: .12;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.48'/%3E%3C/svg%3E");
+      animation: grainShift .24s steps(2) infinite;
+    }
+
+    @keyframes grainShift {
+      0%   { transform: translate(0, 0); }
+      25%  { transform: translate(1%, -1%); }
+      50%  { transform: translate(-1%, 1%); }
+      75%  { transform: translate(1%, 1%); }
+      100% { transform: translate(-1%, -1%); }
     }
 
     .vignette {
       position: fixed;
       inset: 0;
-      z-index: 3;
+      z-index: 1;
       pointer-events: none;
       background: radial-gradient(
         ellipse at center,
         transparent 35%,
-        rgba(0, 0, 0, 0.15) 70%,
-        rgba(0, 0, 0, 0.48) 115%
+        rgba(0, 0, 0, .16) 68%,
+        rgba(0, 0, 0, .64) 120%
       );
-    }
-
-    @keyframes arrival {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes breathing {
-      0%, 100% {
-        transform: scale(1) rotate(0deg);
-      }
-      30% {
-        transform: scale(1.006, 1.009) rotate(-0.1deg);
-      }
-      63% {
-        transform: scale(1.011, 1.004) rotate(0.08deg);
-      }
-      82% {
-        transform: scale(1.004, 1.008) rotate(-0.04deg);
-      }
-    }
-
-    @keyframes slow-turn {
-      0%, 100% {
-        transform: scale(1) rotate(0deg);
-      }
-      38% {
-        transform: scale(1.004) rotate(0.1deg);
-      }
-      73% {
-        transform: scale(1.007) rotate(-0.08deg);
-      }
-    }
-
-    @keyframes ember {
-      0%, 100% {
-        opacity: 0.45;
-        transform: translate(-50%, -50%) scale(0.92);
-      }
-      30% {
-        opacity: 0.7;
-        transform: translate(-50%, -50%) scale(1.02);
-      }
-      62% {
-        opacity: 0.52;
-        transform: translate(-50%, -50%) scale(0.96);
-      }
-      80% {
-        opacity: 0.76;
-        transform: translate(-50%, -50%) scale(1.05);
-      }
-    }
-
-    @keyframes atmosphere {
-      from { opacity: 0.65; }
-      to { opacity: 1; }
-    }
-
-    @keyframes grain-shift {
-      0% { transform: translate(0, 0); }
-      25% { transform: translate(0.5%, -0.5%); }
-      50% { transform: translate(-0.5%, 0.5%); }
-      75% { transform: translate(0.5%, 0.5%); }
-      100% { transform: translate(-0.5%, -0.5%); }
     }
 
     @media (max-width: 600px) {
@@ -211,121 +152,59 @@
         height: 78dvh;
       }
 
-      .living-surface {
-        animation-duration: 14s;
-      }
-
-      .object-image {
-        animation-duration: 21s;
-      }
-
-      .inner-light {
-        width: 34%;
-        filter: blur(5px);
-        animation-duration: 9s;
-      }
-
-      /* Static grain on mobile: avoids continuous repainting. */
-      .grain {
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0.055;
-        animation: none;
+      .light {
+        width: 100vw;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        animation: none !important;
-        scroll-behavior: auto !important;
-      }
-
+      .grain,
+      .artifact,
       .object-image {
-        filter: none !important;
+        animation: none;
       }
     }
   </style>
 </head>
 
 <body>
-  <!-- Distortion filter is only applied to desktop. -->
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="0"
-    height="0"
-    aria-hidden="true"
-    style="position:absolute"
-  >
-    <filter id="living-distortion" x="-5%" y="-5%" width="110%" height="110%">
-      <feTurbulence
-        type="fractalNoise"
-        baseFrequency="0.012 0.018"
-        numOctaves="1"
-        seed="8"
-        result="noise"
-      >
-        <animate
-          attributeName="baseFrequency"
-          dur="16s"
-          values="0.012 0.018;0.014 0.013;0.011 0.019;0.012 0.018"
-          repeatCount="indefinite"
-        />
-      </feTurbulence>
-      <feDisplacementMap
-        in="SourceGraphic"
-        in2="noise"
-        scale="1.4"
-        xChannelSelector="R"
-        yChannelSelector="G"
-      >
-        <animate
-          attributeName="scale"
-          dur="12s"
-          values="0.8;1.6;1;1.4;0.8"
-          repeatCount="indefinite"
-        />
-      </feDisplacementMap>
-    </filter>
-  </svg>
+  <main class="room">
+    <div class="light" aria-hidden="true"></div>
 
-  <div class="atmosphere"></div>
-
-  <main class="artifact" aria-label=" ">
-    <div class="living-surface">
-      <div
-        class="object-image"
-        role="img"
-        aria-label="An abstract sculptural form"
-      ></div>
-      <div class="inner-light"></div>
+    <div class="artifact" aria-hidden="true">
+      <div class="object-image"></div>
     </div>
+
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
   </main>
 
-  <div class="vignette"></div>
-  <div class="grain"></div>
-
   <script>
-    // Discourage casual saving and dragging of the displayed artwork.
-    document.addEventListener("contextmenu", event => {
+    // Deter casual saving and dragging.
+    document.addEventListener("contextmenu", function (event) {
       event.preventDefault();
     });
 
-    document.addEventListener("dragstart", event => {
+    document.addEventListener("dragstart", function (event) {
       event.preventDefault();
     });
 
-    document.addEventListener("selectstart", event => {
+    document.addEventListener("selectstart", function (event) {
       event.preventDefault();
     });
 
-    // On mobile, avoid loading the SVG distortion filter altogether.
-    if (window.matchMedia("(max-width: 600px)").matches) {
-      const filter = document.querySelector("svg");
-      if (filter) filter.remove();
-    }
+    // Block common save and view-source shortcuts where possible.
+    document.addEventListener("keydown", function (event) {
+      const key = event.key.toLowerCase();
+      const modifier = event.ctrlKey || event.metaKey;
+
+      if (
+        modifier &&
+        ["s", "u"].includes(key)
+      ) {
+        event.preventDefault();
+      }
+    });
   </script>
 </body>
 </html>
