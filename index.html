@@ -5,19 +5,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0b0b0a">
-
   <title>Peaceful Visitors Chasing Rabbits</title>
 
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%230b0b0a'/%3E%3Cpath d='M34 9 C29 17 42 20 31 29 S23 42 34 54' fill='none' stroke='%23b18a55' stroke-width='2.1' stroke-linecap='round'/%3E%3Cpath d='M40 14 C47 23 30 29 39 37 S44 45 35 51' fill='none' stroke='%237a6447' stroke-width='1.1' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='31' r='2' fill='%23d7ae70' opacity='.8'/%3E%3C/svg%3E">
 
-  <meta name="description" content="">
-
   <style>
-    :root {
-      color-scheme: dark;
-      --amber: 183, 126, 57;
-    }
-
     * {
       box-sizing: border-box;
     }
@@ -35,28 +27,26 @@
     body {
       position: relative;
       isolation: isolate;
-      background:
-        radial-gradient(
-          ellipse at 50% 44%,
-          #211f1a 0%,
-          #151411 36%,
-          #0b0b0a 76%
-        );
+      background: radial-gradient(
+        ellipse at 50% 44%,
+        #211f1a 0%,
+        #151411 36%,
+        #0b0b0a 76%
+      );
     }
 
     .atmosphere {
       position: fixed;
-      inset: -15%;
+      inset: 0;
       z-index: -1;
       pointer-events: none;
-      background:
-        radial-gradient(
-          ellipse at 50% 47%,
-          rgba(var(--amber), 0.035) 0%,
-          rgba(var(--amber), 0.012) 27%,
-          transparent 58%
-        );
-      animation: atmosphere 13s ease-in-out infinite alternate;
+      background: radial-gradient(
+        ellipse at 50% 47%,
+        rgba(183, 126, 57, 0.035) 0%,
+        rgba(183, 126, 57, 0.012) 27%,
+        transparent 58%
+      );
+      animation: atmosphere 16s ease-in-out infinite alternate;
     }
 
     .artifact {
@@ -70,15 +60,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      animation: arrival 2.8s ease both;
+      animation: arrival 2.4s ease both;
     }
 
     .living-surface {
       position: absolute;
       inset: 0;
-      overflow: visible;
-      transform-origin: 50% 50%;
-      animation: breathing 11s ease-in-out infinite;
+      transform-origin: center;
+      animation: breathing 12s ease-in-out infinite;
       will-change: transform;
     }
 
@@ -91,19 +80,24 @@
       background-size: contain;
       background-position: center;
       background-repeat: no-repeat;
-      transform-origin: 50% 50%;
-      animation: slow-turn 17s ease-in-out infinite;
-      will-change: filter, transform;
-      filter: url(#living-distortion);
+      transform-origin: center;
+      animation: slow-turn 19s ease-in-out infinite;
+      will-change: transform;
     }
 
-    /* A soft, shifting warmth around the inner cavity. */
+    /* Desktop-only subtle material distortion. */
+    @media (min-width: 601px) {
+      .object-image {
+        filter: url(#living-distortion);
+      }
+    }
+
     .inner-light {
       position: absolute;
-      width: 32%;
-      aspect-ratio: 1;
       left: 50%;
       top: 47%;
+      width: 32%;
+      aspect-ratio: 1;
       transform: translate(-50%, -50%);
       border-radius: 50%;
       pointer-events: none;
@@ -115,20 +109,22 @@
         transparent 72%
       );
       mix-blend-mode: screen;
-      filter: blur(9px);
-      animation: ember 7.3s ease-in-out infinite;
+      filter: blur(7px);
+      animation: ember 8s ease-in-out infinite;
+      will-change: opacity, transform;
     }
 
     .grain {
       position: fixed;
-      inset: -50%;
-      width: 200%;
-      height: 200%;
+      inset: -25%;
+      width: 150%;
+      height: 150%;
       z-index: 4;
       pointer-events: none;
-      opacity: 0.105;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.24'/%3E%3C/svg%3E");
-      animation: grain-shift 0.24s steps(2) infinite;
+      opacity: 0.09;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.24'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+      animation: grain-shift 0.5s steps(2) infinite;
     }
 
     .vignette {
@@ -145,26 +141,22 @@
     }
 
     @keyframes arrival {
-      from {
-        opacity: 0;
-      }
-      to {
-        opacity: 1;
-      }
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     @keyframes breathing {
       0%, 100% {
         transform: scale(1) rotate(0deg);
       }
-      28% {
-        transform: scale(1.006, 1.009) rotate(-0.12deg);
+      30% {
+        transform: scale(1.006, 1.009) rotate(-0.1deg);
       }
-      61% {
-        transform: scale(1.012, 1.004) rotate(0.1deg);
+      63% {
+        transform: scale(1.011, 1.004) rotate(0.08deg);
       }
-      79% {
-        transform: scale(1.004, 1.01) rotate(-0.06deg);
+      82% {
+        transform: scale(1.004, 1.008) rotate(-0.04deg);
       }
     }
 
@@ -173,53 +165,43 @@
         transform: scale(1) rotate(0deg);
       }
       38% {
-        transform: scale(1.005) rotate(0.12deg);
+        transform: scale(1.004) rotate(0.1deg);
       }
       73% {
-        transform: scale(1.009) rotate(-0.1deg);
+        transform: scale(1.007) rotate(-0.08deg);
       }
     }
 
     @keyframes ember {
       0%, 100% {
-        opacity: 0.48;
-        transform: translate(-50%, -50%) scale(0.88);
+        opacity: 0.45;
+        transform: translate(-50%, -50%) scale(0.92);
       }
-      24% {
-        opacity: 0.75;
+      30% {
+        opacity: 0.7;
         transform: translate(-50%, -50%) scale(1.02);
       }
-      51% {
-        opacity: 0.56;
-        transform: translate(-50%, -50%) scale(0.94);
+      62% {
+        opacity: 0.52;
+        transform: translate(-50%, -50%) scale(0.96);
       }
-      68% {
-        opacity: 0.83;
-        transform: translate(-50%, -50%) scale(1.08);
-      }
-      86% {
-        opacity: 0.44;
-        transform: translate(-50%, -50%) scale(0.91);
+      80% {
+        opacity: 0.76;
+        transform: translate(-50%, -50%) scale(1.05);
       }
     }
 
     @keyframes atmosphere {
-      from {
-        opacity: 0.65;
-        transform: scale(0.98);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1.035);
-      }
+      from { opacity: 0.65; }
+      to { opacity: 1; }
     }
 
     @keyframes grain-shift {
-      0%   { transform: translate(0, 0); }
-      25%  { transform: translate(1%, -1%); }
-      50%  { transform: translate(-1%, 1%); }
-      75%  { transform: translate(1%, 1%); }
-      100% { transform: translate(-1%, -1%); }
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(0.5%, -0.5%); }
+      50% { transform: translate(-0.5%, 0.5%); }
+      75% { transform: translate(0.5%, 0.5%); }
+      100% { transform: translate(-0.5%, -0.5%); }
     }
 
     @media (max-width: 600px) {
@@ -229,34 +211,47 @@
         height: 78dvh;
       }
 
-      .inner-light {
-        width: 34%;
-        filter: blur(7px);
+      .living-surface {
+        animation-duration: 14s;
       }
 
+      .object-image {
+        animation-duration: 21s;
+      }
+
+      .inner-light {
+        width: 34%;
+        filter: blur(5px);
+        animation-duration: 9s;
+      }
+
+      /* Static grain on mobile: avoids continuous repainting. */
       .grain {
-        opacity: 0.075;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.055;
+        animation: none;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .living-surface,
-      .object-image,
-      .inner-light,
-      .atmosphere,
-      .grain {
-        animation: none;
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        scroll-behavior: auto !important;
       }
 
       .object-image {
-        filter: none;
+        filter: none !important;
       }
     }
   </style>
 </head>
 
 <body>
-  <!-- Animated organic distortion -->
+  <!-- Distortion filter is only applied to desktop. -->
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="0"
@@ -264,35 +259,32 @@
     aria-hidden="true"
     style="position:absolute"
   >
-    <filter id="living-distortion" x="-8%" y="-8%" width="116%" height="116%">
+    <filter id="living-distortion" x="-5%" y="-5%" width="110%" height="110%">
       <feTurbulence
-        id="surface-noise"
         type="fractalNoise"
         baseFrequency="0.012 0.018"
-        numOctaves="2"
+        numOctaves="1"
         seed="8"
         result="noise"
       >
         <animate
           attributeName="baseFrequency"
-          dur="13s"
-          values="0.012 0.018;0.016 0.012;0.01 0.02;0.014 0.015;0.012 0.018"
-          keyTimes="0;0.27;0.53;0.79;1"
+          dur="16s"
+          values="0.012 0.018;0.014 0.013;0.011 0.019;0.012 0.018"
           repeatCount="indefinite"
         />
       </feTurbulence>
       <feDisplacementMap
         in="SourceGraphic"
         in2="noise"
-        scale="2.2"
+        scale="1.4"
         xChannelSelector="R"
         yChannelSelector="G"
       >
         <animate
           attributeName="scale"
-          dur="9.5s"
-          values="1.2;2.5;1.5;3;1.2"
-          keyTimes="0;0.29;0.55;0.78;1"
+          dur="12s"
+          values="0.8;1.6;1;1.4;0.8"
           repeatCount="indefinite"
         />
       </feDisplacementMap>
@@ -303,7 +295,11 @@
 
   <main class="artifact" aria-label=" ">
     <div class="living-surface">
-      <div class="object-image" role="img" aria-label="An abstract sculptural form"></div>
+      <div
+        class="object-image"
+        role="img"
+        aria-label="An abstract sculptural form"
+      ></div>
       <div class="inner-light"></div>
     </div>
   </main>
@@ -325,17 +321,10 @@
       event.preventDefault();
     });
 
-    // Keep the distortion subtle and irregular.
-    // If SVG filter animation is unsupported, the CSS breathing remains.
-    const surface = document.querySelector(".living-surface");
-    const image = document.querySelector(".object-image");
-
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      surface.style.animation = "none";
-      image.style.animation = "none";
-      document.querySelector(".inner-light").style.animation = "none";
-      document.querySelector(".atmosphere").style.animation = "none";
-      document.querySelector(".grain").style.animation = "none";
+    // On mobile, avoid loading the SVG distortion filter altogether.
+    if (window.matchMedia("(max-width: 600px)").matches) {
+      const filter = document.querySelector("svg");
+      if (filter) filter.remove();
     }
   </script>
 </body>
