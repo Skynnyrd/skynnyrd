@@ -73,10 +73,12 @@
       place-items: center;
       animation: arrival 2.8s ease-out both;
       will-change: transform;
+      cursor: default;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    /* Use a background layer instead of a directly draggable image. */
     .object-image {
+      position: relative;
       width: 100%;
       height: 100%;
       background-image: url("object.png");
@@ -89,6 +91,85 @@
       -webkit-user-drag: none;
       animation: breathing 12s ease-in-out infinite;
       transform-origin: center;
+    }
+
+    /* The light is normally invisible. It appears only when awakened. */
+    .inner-light {
+      position: absolute;
+      inset: 12%;
+      pointer-events: none;
+      opacity: 0;
+      background: radial-gradient(
+        ellipse at 50% 50%,
+        rgba(255, 184, 83, .34) 0%,
+        rgba(195, 126, 47, .16) 24%,
+        rgba(130, 79, 30, .07) 43%,
+        transparent 68%
+      );
+      filter: blur(20px);
+      mix-blend-mode: screen;
+    }
+
+    .artifact.awakened .inner-light {
+      animation: awaken-glow 2.4s ease-out both;
+    }
+
+    .artifact.awakened .object-image {
+      animation:
+        breathing 12s ease-in-out infinite,
+        awaken-shudder 1.05s ease-out both;
+    }
+
+    @keyframes awaken-glow {
+      0% {
+        opacity: 0;
+        transform: scale(.82);
+      }
+      18% {
+        opacity: 1;
+        transform: scale(1.08);
+      }
+      42% {
+        opacity: .62;
+        transform: scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(.94);
+      }
+    }
+
+    @keyframes awaken-shudder {
+      0% {
+        translate: 0 0;
+        scale: 1;
+        rotate: 0deg;
+      }
+      12% {
+        translate: -1.5px 0;
+        scale: 1.012;
+        rotate: -.35deg;
+      }
+      25% {
+        translate: 1.5px .5px;
+        scale: 1.018;
+        rotate: .3deg;
+      }
+      39% {
+        translate: -.8px -.4px;
+        scale: 1.012;
+        rotate: -.18deg;
+      }
+      55% {
+        translate: .5px 0;
+        scale: 1.006;
+        rotate: .1deg;
+      }
+      100% {
+        translate: 0 0;
+        scale: 1;
+        rotate: 0deg;
+      }
     }
 
     @keyframes breathing {
@@ -154,6 +235,10 @@
       .light {
         width: 100vw;
       }
+
+      .inner-light {
+        filter: blur(14px);
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -161,6 +246,10 @@
       .artifact,
       .object-image {
         animation: none;
+      }
+
+      .artifact.awakened .inner-light {
+        animation: awaken-glow 2.4s ease-out both;
       }
     }
   </style>
@@ -170,8 +259,9 @@
   <main class="room">
     <div class="light" aria-hidden="true"></div>
 
-    <div class="artifact" aria-hidden="true">
+    <div class="artifact" id="artifact">
       <div class="object-image"></div>
+      <div class="inner-light" aria-hidden="true"></div>
     </div>
 
     <div class="vignette" aria-hidden="true"></div>
@@ -197,11 +287,46 @@
       const key = event.key.toLowerCase();
       const modifier = event.ctrlKey || event.metaKey;
 
-      if (
-        modifier &&
-        ["s", "u"].includes(key)
-      ) {
+      if (modifier && ["s", "u"].includes(key)) {
         event.preventDefault();
+      }
+    });
+
+    // Three taps/clicks awaken the object.
+    const artifact = document.getElementById("artifact");
+    let tapCount = 0;
+    let tapTimer = null;
+    let awakeTimer = null;
+
+    artifact.addEventListener("pointerdown", function (event) {
+      if (event.pointerType === "mouse" && event.button !== 0) {
+        return;
+      }
+
+      tapCount += 1;
+
+      clearTimeout(tapTimer);
+
+      // Taps must happen within a short window.
+      tapTimer = setTimeout(function () {
+        tapCount = 0;
+      }, 1400);
+
+      if (tapCount >= 3) {
+        tapCount = 0;
+        clearTimeout(tapTimer);
+
+        artifact.classList.remove("awakened");
+
+        // Restart the effect if the visitor triggers it again.
+        void artifact.offsetWidth;
+
+        artifact.classList.add("awakened");
+
+        clearTimeout(awakeTimer);
+        awakeTimer = setTimeout(function () {
+          artifact.classList.remove("awakened");
+        }, 2500);
       }
     });
   </script>
