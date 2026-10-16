@@ -1,17 +1,16 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0b0b0a">
+<meta name="theme-color" content="#090908">
 <title>Peaceful Visitors Chasing Rabbits</title>
 
 <style>
 :root {
-  color-scheme: dark;
-  --black: #0b0b0a;
-  --amber: #c58b48;
-  --ivory: #b8a98c;
+  --void: #090908;
+  --bone: #b9aa8d;
+  --amber: #c38b4c;
 }
 
 * {
@@ -20,99 +19,68 @@
 }
 
 html, body {
+  margin: 0;
   width: 100%;
   height: 100%;
-  margin: 0;
   overflow: hidden;
-  background: var(--black);
+  background: var(--void);
 }
 
 body {
-  font-family: Georgia, "Times New Roman", serif;
   overscroll-behavior: none;
 }
 
-.room {
+#room {
   position: fixed;
   inset: 0;
   overflow: hidden;
   isolation: isolate;
   background:
     radial-gradient(ellipse at 50% 45%,
-      #242119 0%, #171612 35%, #10100e 66%, #080808 100%);
-  transition: background 4s ease;
+      #211f19 0%, #151410 38%, #0b0b09 78%, #050505 100%);
+  transition: background 5s ease;
 }
 
-.light {
+#atmosphere {
   position: absolute;
-  width: min(90vw, 850px);
-  aspect-ratio: 1;
-  left: 50%;
-  top: 46%;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: radial-gradient(circle,
-    rgba(183, 135, 70, .075) 0%,
-    rgba(143, 105, 55, .025) 35%,
-    transparent 70%);
+  inset: -20%;
+  z-index: 0;
   pointer-events: none;
-  transition: opacity 4s ease, transform 8s ease;
+  background: radial-gradient(ellipse at 50% 48%,
+    rgba(168, 122, 65, .08),
+    transparent 55%);
+  transition: transform 8s ease, opacity 5s ease;
 }
 
-.artifact {
+#artifact {
   position: absolute;
-  z-index: 3;
+  z-index: 4;
   width: min(70vw, 480px);
   height: 88vh;
   height: 88dvh;
   left: 50%;
   top: 48%;
   transform: translate(-50%, -50%);
+  opacity: 0;
   display: grid;
   place-items: center;
-  opacity: 0;
-  animation: arrive 2.8s ease forwards;
   cursor: pointer;
   touch-action: manipulation;
   outline: none;
+  animation: arrival 2.8s ease forwards;
 }
 
-.object-image {
+#objectImage {
   width: 100%;
   height: 100%;
-  background-image: url("object.png");
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  transform-origin: center;
-  animation: breathing 12s ease-in-out infinite;
-  will-change: transform;
-  transition: opacity 3s ease, filter 3s ease;
+  background: url("object.png") center / contain no-repeat;
+  animation: breathe 12s ease-in-out infinite;
+  transition: filter 5s ease, opacity 5s ease, transform 7s ease;
 }
 
-.artifact:focus-visible {
-  outline: 1px solid rgba(197, 139, 72, .4);
+#artifact:focus-visible {
+  outline: 1px solid rgba(195, 139, 76, .5);
   outline-offset: 8px;
-}
-
-.grain {
-  position: absolute;
-  inset: -50%;
-  z-index: 5;
-  pointer-events: none;
-  opacity: .12;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");
-  animation: grainShift .22s steps(2) infinite;
-}
-
-.vignette {
-  position: absolute;
-  inset: 0;
-  z-index: 6;
-  pointer-events: none;
-  background: radial-gradient(ellipse at center,
-    transparent 25%, rgba(0, 0, 0, .2) 65%, rgba(0, 0, 0, .7) 120%);
-  transition: opacity 4s ease;
 }
 
 #world {
@@ -126,86 +94,103 @@ body {
   transition: opacity 5s ease;
 }
 
-.room.open {
+#grain {
+  position: absolute;
+  inset: -50%;
+  z-index: 8;
+  opacity: .10;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E");
+  animation: grain .24s steps(2) infinite;
+}
+
+#vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center,
+    transparent 28%, rgba(0,0,0,.25) 67%, rgba(0,0,0,.76) 120%);
+  transition: opacity 5s ease;
+}
+
+/* The world is revealed as a physical space, not an interface. */
+#room.open {
   background:
-    radial-gradient(ellipse at 50% 48%,
-      #211b12 0%, #13120e 34%, #0b0b09 72%, #050505 100%);
+    radial-gradient(ellipse at 50% 45%,
+      #292116 0%, #17130d 30%, #0b0a08 70%, #030303 100%);
 }
 
-.room.open .light {
-  opacity: .75;
-  transform: translate(-50%, -50%) scale(1.8);
-}
-
-.room.open #world {
+#room.open #world {
   opacity: 1;
 }
 
-.room.open .object-image {
-  opacity: .2;
-  filter: brightness(.6) sepia(.25);
+#room.open #atmosphere {
+  transform: scale(1.5);
+  opacity: .7;
 }
 
-.room.open .artifact {
-  z-index: 1;
-  transform: translate(-50%, -50%) scale(.72);
-  transition: transform 6s ease, opacity 5s ease;
+#room.open #objectImage {
+  opacity: .32;
+  filter: brightness(.55) sepia(.3);
+  transform: scale(.86);
 }
 
-.room.open .vignette {
-  opacity: .55;
+#room.open #artifact {
+  transform: translate(-50%, -50%) scale(.68);
+  transition: transform 7s ease, opacity 5s ease;
 }
 
-@keyframes arrive {
+@keyframes arrival {
   from { opacity: 0; transform: translate(-50%, -47%); }
   to { opacity: 1; transform: translate(-50%, -50%); }
 }
 
-@keyframes breathing {
-  0%, 100% { transform: scale(1.018) rotate(-.35deg); }
-  50% { transform: scale(.99) rotate(.35deg); }
+@keyframes breathe {
+  0%, 100% { transform: scale(1.018) rotate(-.3deg); }
+  50% { transform: scale(.99) rotate(.3deg); }
 }
 
-@keyframes grainShift {
-  0% { transform: translate(0, 0); }
-  25% { transform: translate(1%, -1%); }
-  50% { transform: translate(-1%, 1%); }
-  75% { transform: translate(1%, 1%); }
+@keyframes grain {
+  0% { transform: translate(0,0); }
+  25% { transform: translate(1%,-1%); }
+  50% { transform: translate(-1%,1%); }
+  75% { transform: translate(1%,1%); }
 }
 
 @media (max-width: 600px) {
-  .artifact {
+  #artifact {
     width: min(96vw, 540px);
     height: 78vh;
     height: 78dvh;
     top: 47%;
   }
-
-  .light {
-    width: 100vw;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .grain, .object-image { animation: none; }
+  #grain, #objectImage {
+    animation: none;
+  }
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+  }
 }
 </style>
 </head>
 
 <body>
-<main class="room" id="room">
-  <div class="light"></div>
+<main id="room">
+  <div id="atmosphere"></div>
+
+  <div id="artifact" role="button" tabindex="0"
+       aria-label="Examine the object">
+    <div id="objectImage"></div>
+  </div>
 
   <canvas id="world" aria-hidden="true"></canvas>
 
-  <div class="artifact" id="artifact"
-       role="button" tabindex="0"
-       aria-label="Examine the object">
-    <div class="object-image"></div>
-  </div>
-
-  <div class="grain"></div>
-  <div class="vignette"></div>
+  <div id="grain"></div>
+  <div id="vignette"></div>
 </main>
 
 <script>
@@ -215,32 +200,32 @@ body {
   const canvas = document.getElementById("world");
   const ctx = canvas.getContext("2d");
 
-  let taps = 0;
-  let opened = false;
-  let width = 0;
-  let height = 0;
-  let dpr = 1;
-  let startTime = 0;
-  let branches = [];
-  let nodes = [];
-  let links = [];
-  let raf = 0;
-
   const reducedMotion =
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  function randomFactory(seed) {
-    let s = seed >>> 0;
+  let width = 0;
+  let height = 0;
+  let dpr = 1;
+  let touches = 0;
+  let revealed = false;
+  let start = 0;
+  let raf = 0;
+  let structures = [];
+  let cavities = [];
+  let seams = [];
+
+  function randomSource(seed) {
+    let state = seed >>> 0;
     return () => {
-      s = (s * 1664525 + 1013904223) >>> 0;
-      return s / 4294967296;
+      state = (state * 1664525 + 1013904223) >>> 0;
+      return state / 4294967296;
     };
   }
 
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
     width = window.innerWidth;
     height = window.innerHeight;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
@@ -249,289 +234,320 @@ body {
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    if (opened) {
-      createWorld();
-      draw(performance.now());
+    if (revealed) {
+      buildWorld();
+      render(performance.now());
     }
   }
 
-  function createWorld() {
-    branches = [];
-    nodes = [];
-    links = [];
+  /*
+    A world of fused anatomical architecture.
+    Each form is a closed, irregular mass with a hollow interior:
+    part bone, part shell, part impossible machine.
+  */
+  function buildWorld() {
+    structures = [];
+    cavities = [];
+    seams = [];
 
-    const rand = randomFactory(78193);
-    const cx = width * (.5 + (rand() - .5) * .05);
+    const random = randomSource(19471);
+    const unit = Math.min(width, height);
+    const cx = width * .5;
     const cy = height * .49;
-    const scale = Math.min(width, height);
-    const reach = scale * .44;
 
-    // A network that grows outward from the centre,
-    // using related but deliberately imperfect angles.
-    function grow(x, y, angle, length, depth, parentIndex, generation) {
-      if (depth <= 0 || length < 5) return;
+    // Large forms frame a central depth.
+    const count = 17;
 
-      const bend = (rand() - .5) * .48;
-      const nextAngle = angle + bend;
-      const endX = x + Math.cos(nextAngle) * length;
-      const endY = y + Math.sin(nextAngle) * length;
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2 +
+                    (random() - .5) * .2;
 
-      const index = branches.length;
-      const thickness = Math.max(.45, depth * .64);
+      const distance = unit * (.22 + random() * .25);
+      const x = cx + Math.cos(angle) * distance;
+      const y = cy + Math.sin(angle) * distance;
 
-      branches.push({
-        x1: x, y1: y,
-        x2: endX, y2: endY,
-        bend: bend,
-        depth: depth,
-        thickness: thickness,
-        seed: rand() * Math.PI * 2,
-        generation: generation
+      const length = unit * (.16 + random() * .20);
+      const breadth = unit * (.025 + random() * .035);
+      const rotation = angle + (random() - .5) * .9;
+
+      structures.push({
+        x, y, length, breadth, rotation,
+        seed: random() * 10,
+        shape: Math.floor(random() * 4),
+        shade: .65 + random() * .55,
+        layer: random(),
+        phase: random() * Math.PI * 2
       });
 
-      nodes.push({
-        x: endX, y: endY,
-        phase: rand() * Math.PI * 2,
-        size: .5 + rand() * 1.6,
-        depth: depth
+      // Recesses inside the larger masses.
+      if (random() > .24) {
+        cavities.push({
+          x: x + Math.cos(rotation) * length * .15,
+          y: y + Math.sin(rotation) * length * .15,
+          rx: breadth * (.26 + random() * .25),
+          ry: breadth * (.5 + random() * .55),
+          rotation: rotation + (random() - .5) * .5,
+          phase: random() * Math.PI * 2,
+          shade: random()
+        });
+      }
+    }
+
+    // Thick, tapered, curved joins: not a wireframe.
+    // Their overlapping silhouettes suggest one fused organism.
+    for (let i = 0; i < structures.length; i++) {
+      const a = structures[i];
+      const b = structures[(i + 3 + Math.floor(random() * 5))
+                            % structures.length];
+
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+
+      seams.push({
+        x1: a.x + Math.cos(a.rotation) * a.length * .24,
+        y1: a.y + Math.sin(a.rotation) * a.length * .24,
+        x2: b.x - Math.cos(b.rotation) * b.length * .22,
+        y2: b.y - Math.sin(b.rotation) * b.length * .22,
+        curve: (random() - .5) * unit * .15,
+        width: unit * (.008 + random() * .013),
+        phase: random() * Math.PI * 2
       });
-
-      if (parentIndex >= 0) {
-        links.push({ a: parentIndex, b: index });
-      }
-
-      if (generation < 5) {
-        const spread = .43 + rand() * .28;
-        const nextLength = length * (.70 + rand() * .05);
-
-        grow(endX, endY, nextAngle - spread, nextLength,
-             depth - 1, index, generation + 1);
-
-        grow(endX, endY, nextAngle + spread, nextLength,
-             depth - 1, index, generation + 1);
-
-        if (rand() > .66 && generation < 3) {
-          grow(endX, endY, nextAngle + (rand() - .5) * .18,
-               length * .64, depth - 1, index, generation + 1);
-        }
-      }
-    }
-
-    // Uneven radial growth creates an architectural,
-    // almost skeletal structure rather than a perfect tree.
-    const roots = 11;
-    for (let i = 0; i < roots; i++) {
-      const angle = (Math.PI * 2 * i / roots) +
-                    (rand() - .5) * .24;
-      const startX = cx + Math.cos(angle) * scale * .025;
-      const startY = cy + Math.sin(angle) * scale * .025;
-      grow(startX, startY, angle, reach * (.55 + rand() * .35),
-           5, -1, 0);
-    }
-
-    // Connect nearby branches with faint mineral-like struts.
-    // The connections follow distance, not a regular grid.
-    for (let i = 0; i < nodes.length; i++) {
-      let candidates = [];
-      for (let j = i + 1; j < nodes.length; j++) {
-        const dx = nodes[i].x - nodes[j].x;
-        const dy = nodes[i].y - nodes[j].y;
-        const dist = Math.hypot(dx, dy);
-        if (dist > scale * .025 && dist < scale * .075) {
-          candidates.push({ j, dist });
-        }
-      }
-
-      candidates.sort((a, b) => a.dist - b.dist);
-      if (candidates.length && rand() > .38) {
-        const chosen = candidates[Math.floor(rand() *
-          Math.min(candidates.length, 3))];
-        links.push({ a: i, b: chosen.j, mineral: true });
-      }
-    }
-
-    // Long, nearly invisible geometric relationships.
-    // They become visible only as the world opens.
-    for (let i = 0; i < nodes.length; i += 3) {
-      let nearest = -1;
-      let best = scale * .15;
-
-      for (let j = i + 5; j < nodes.length; j += 2) {
-        const d = Math.hypot(nodes[i].x - nodes[j].x,
-                             nodes[i].y - nodes[j].y);
-        if (d < best && d > scale * .045) {
-          best = d;
-          nearest = j;
-        }
-      }
-
-      if (nearest >= 0 && rand() > .45) {
-        links.push({ a: i, b: nearest, deep: true });
-      }
     }
   }
 
-  function line(x1, y1, x2, y2, color, thickness, alpha) {
+  function drawBone(s, time, reveal) {
+    const drift = reducedMotion ? 0 :
+      Math.sin(time * .00022 + s.phase) * .009;
+
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.rotate(s.rotation + drift);
+
+    const l = s.length;
+    const r = s.breadth;
+    const pulse = reducedMotion ? .5 :
+      .5 + .5 * Math.sin(time * .00035 + s.phase);
+
+    // A fused, tapered body with knotted ends.
+    // Curves stay broad and physical; no hairline branches.
     ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.strokeStyle = color;
-    ctx.globalAlpha = alpha;
-    ctx.lineWidth = thickness;
+    ctx.moveTo(-l * .58, -r * .12);
+    ctx.bezierCurveTo(-l * .48, -r * 1.2,
+      -l * .28, -r * .85, -l * .15, -r * .43);
+    ctx.bezierCurveTo(l * .08, -r * .18,
+      l * .24, -r * 1.22, l * .43, -r * .62);
+    ctx.bezierCurveTo(l * .68, -r * .25,
+      l * .58, r * .65, l * .35, r * .52);
+    ctx.bezierCurveTo(l * .12, r * .27,
+      -l * .12, r * 1.12, -l * .32, r * .58);
+    ctx.bezierCurveTo(-l * .52, r * .38,
+      -l * .69, r * .25, -l * .58, -r * .12);
+    ctx.closePath();
+
+    // Deep contact shadow gives each mass weight.
+    ctx.fillStyle = "#050504";
+    ctx.globalAlpha = reveal * .88;
+    ctx.shadowColor = "#000";
+    ctx.shadowBlur = r * 1.8;
+    ctx.shadowOffsetX = r * .35;
+    ctx.shadowOffsetY = r * .55;
+    ctx.fill();
+    ctx.shadowColor = "transparent";
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+
+    // Mineral body: warm ivory in the light, charcoal in shadow.
+    const gradient = ctx.createLinearGradient(-l * .25, -r,
+                                                l * .25, r);
+    gradient.addColorStop(0, "#4a4030");
+    gradient.addColorStop(.2, "#b8a687");
+    gradient.addColorStop(.37, "#d0c1a0");
+    gradient.addColorStop(.52, "#80735b");
+    gradient.addColorStop(.73, "#393126");
+    gradient.addColorStop(1, "#171510");
+
+    ctx.fillStyle = gradient;
+    ctx.globalAlpha = reveal * .74 * s.shade;
+    ctx.fill();
+
+    // Eroded ridge catching a small amount of amber light.
+    ctx.beginPath();
+    ctx.moveTo(-l * .48, -r * .25);
+    ctx.bezierCurveTo(-l * .2, -r * .82,
+      l * .12, -r * .5, l * .42, -r * .4);
+    ctx.strokeStyle = "#e0c79b";
+    ctx.lineWidth = Math.max(.5, r * .045);
+    ctx.globalAlpha = reveal * (.07 + pulse * .08);
+    ctx.stroke();
+
+    // Dark inner seam: the material seems to have grown around it.
+    ctx.beginPath();
+    ctx.moveTo(-l * .28, r * .19);
+    ctx.bezierCurveTo(-l * .05, r * .4,
+      l * .13, -r * .15, l * .35, r * .13);
+    ctx.strokeStyle = "#17130d";
+    ctx.lineWidth = r * .14;
+    ctx.globalAlpha = reveal * .45;
+    ctx.stroke();
+
+    // Very restrained light inside the seam, not on its surface.
+    ctx.beginPath();
+    ctx.moveTo(-l * .1, r * .16);
+    ctx.bezierCurveTo(l * .04, r * .13,
+      l * .16, r * .02, l * .28, r * .12);
+    ctx.strokeStyle = "#d18b3e";
+    ctx.lineWidth = Math.max(.4, r * .035);
+    ctx.globalAlpha = reveal * (.06 + pulse * .13);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawSeam(s, time, reveal) {
+    const pulse = reducedMotion ? .4 :
+      .5 + .5 * Math.sin(time * .0004 + s.phase);
+
+    ctx.beginPath();
+    ctx.moveTo(s.x1, s.y1);
+    ctx.quadraticCurveTo(
+      (s.x1 + s.x2) * .5,
+      (s.y1 + s.y2) * .5 + s.curve,
+      s.x2, s.y2
+    );
+
+    // These are thick organic joints, not glowing lines.
+    ctx.strokeStyle = "#100e0a";
+    ctx.lineWidth = s.width * 1.9;
+    ctx.globalAlpha = reveal * .8;
+    ctx.lineCap = "round";
+    ctx.stroke();
+
+    ctx.strokeStyle = "#8c7654";
+    ctx.lineWidth = s.width * .6;
+    ctx.globalAlpha = reveal * .22;
+    ctx.stroke();
+
+    // A little light appears far down inside selected joints.
+    ctx.strokeStyle = "#d79a4e";
+    ctx.lineWidth = Math.max(.5, s.width * .12);
+    ctx.globalAlpha = reveal * (.025 + pulse * .055);
     ctx.stroke();
   }
 
-  function draw(now) {
-    if (!opened) return;
+  function drawCavity(c, time, reveal) {
+    const pulse = reducedMotion ? .5 :
+      .5 + .5 * Math.sin(time * .0003 + c.phase);
 
-    const elapsed = (now - startTime) / 1000;
-    const reveal = reducedMotion
-      ? 1
-      : Math.min(1, Math.max(0, elapsed / 8));
+    ctx.save();
+    ctx.translate(c.x, c.y);
+    ctx.rotate(c.rotation);
+
+    // The opening is irregular and recessed, not a perfect circle.
+    ctx.beginPath();
+    ctx.moveTo(-c.rx, 0);
+    ctx.bezierCurveTo(-c.rx * .85, -c.ry * 1.1,
+      c.rx * .35, -c.ry * 1.25, c.rx, -c.ry * .15);
+    ctx.bezierCurveTo(c.rx * 1.2, c.ry * .55,
+      -c.rx * .2, c.ry * 1.15, -c.rx, 0);
+    ctx.closePath();
+
+    ctx.fillStyle = "#080705";
+    ctx.globalAlpha = reveal * .96;
+    ctx.fill();
+
+    // Amber is buried beneath the surface, barely visible.
+    const inner = ctx.createRadialGradient(
+      c.rx * .12, c.ry * .1, 0,
+      c.rx * .12, c.ry * .1, Math.max(c.rx, c.ry)
+    );
+    inner.addColorStop(0, `rgba(190, 116, 43, ${.04 + pulse * .08})`);
+    inner.addColorStop(.48, "rgba(111, 65, 25, .08)");
+    inner.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+    ctx.fillStyle = inner;
+    ctx.globalAlpha = reveal;
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function render(now) {
+    if (!revealed) return;
+
+    const elapsed = (now - start) / 1000;
+    const reveal = reducedMotion ? 1 :
+      Math.min(1, Math.max(0, elapsed / 6));
 
     ctx.clearRect(0, 0, width, height);
-    ctx.save();
 
-    // Slow spatial drift, like a room settling around you.
-    const driftX = reducedMotion ? 0 : Math.sin(now * .00013) * 3;
-    const driftY = reducedMotion ? 0 : Math.cos(now * .00011) * 4;
-    ctx.translate(driftX, driftY);
-
-    // Subtle distant geometry: fine lines, no interface.
-    ctx.globalCompositeOperation = "source-over";
-    for (const link of links) {
-      if (!link.deep) continue;
-      const a = nodes[link.a];
-      const b = nodes[link.b];
-      line(a.x, a.y, b.x, b.y,
-        "rgba(158, 132, 91, 1)", .45, .075 * reveal);
-    }
-
-    // Branches are drawn from the centre outward.
-    for (let i = 0; i < branches.length; i++) {
-      const b = branches[i];
-      const progress = reducedMotion
-        ? 1
-        : Math.min(1, Math.max(0,
-            (elapsed - b.generation * .22) / 3.5));
-
-      if (progress <= 0) continue;
-
-      const ex = b.x1 + (b.x2 - b.x1) * progress;
-      const ey = b.y1 + (b.y2 - b.y1) * progress;
-      const midX = (b.x1 + ex) * .5;
-      const midY = (b.y1 + ey) * .5;
-      const offset = b.bend * 9;
-
-      ctx.beginPath();
-      ctx.moveTo(b.x1, b.y1);
-      ctx.quadraticCurveTo(midX - offset, midY + offset, ex, ey);
-
-      // Dark body: the structure should feel mineral, not neon.
-      ctx.strokeStyle = "rgba(106, 91, 68, 1)";
-      ctx.globalAlpha = .24 + reveal * .20;
-      ctx.lineWidth = b.thickness + 2.5;
-      ctx.stroke();
-
-      // Narrow warm edge, like old stone catching light.
-      ctx.strokeStyle = "rgba(190, 148, 91, 1)";
-      ctx.globalAlpha = (.10 + reveal * .24) *
-                        (b.depth / 5);
-      ctx.lineWidth = Math.max(.35, b.thickness * .42);
-      ctx.stroke();
-
-      // A fine internal vein.
-      ctx.strokeStyle = "rgba(226, 167, 89, 1)";
-      ctx.globalAlpha = (.025 + reveal * .11) *
-                        (b.depth / 5);
-      ctx.lineWidth = .45;
-      ctx.stroke();
-    }
-
-    // Irregular connections bind the branches into a larger system.
-    for (const link of links) {
-      if (link.deep) continue;
-
-      const a = nodes[link.a];
-      const b = nodes[link.b];
-      const alpha = link.mineral ? .10 : .045;
-      line(a.x, a.y, b.x, b.y,
-        "rgba(184, 151, 102, 1)",
-        link.mineral ? .65 : .4,
-        alpha * reveal);
-    }
-
-    // Light travels through the system in slow pulses.
-    ctx.globalCompositeOperation = "lighter";
-
-    for (let i = 0; i < nodes.length; i++) {
-      const n = nodes[i];
-      const pulse = reducedMotion
-        ? .4
-        : (Math.sin(now * .00065 + n.phase) + 1) / 2;
-
-      const radius = n.size * (.65 + pulse * .65);
-      const alpha = (.05 + pulse * .12) * reveal;
-
-      if (alpha <= .01) continue;
-
-      const glow = ctx.createRadialGradient(
-        n.x, n.y, 0, n.x, n.y, radius * 5
-      );
-      glow.addColorStop(0, `rgba(238, 177, 98, ${alpha})`);
-      glow.addColorStop(.3, `rgba(194, 131, 57, ${alpha * .35})`);
-      glow.addColorStop(1, "rgba(194, 131, 57, 0)");
-
-      ctx.fillStyle = glow;
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, radius * 5, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = `rgba(237, 189, 121, ${alpha * 1.6})`;
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, radius * .55, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // A faint central depth: a void, not a portal graphic.
-    const cx = width * .5;
-    const cy = height * .49;
+    // A faint depth field behind the architecture.
     const core = ctx.createRadialGradient(
-      cx, cy, 0, cx, cy, Math.min(width, height) * .22
+      width * .5, height * .49, 0,
+      width * .5, height * .49, Math.min(width, height) * .62
     );
-    core.addColorStop(0, "rgba(5, 5, 4, .48)");
-    core.addColorStop(.5, "rgba(9, 8, 6, .14)");
-    core.addColorStop(1, "rgba(9, 8, 6, 0)");
+    core.addColorStop(0, "rgba(126, 78, 34, .095)");
+    core.addColorStop(.42, "rgba(60, 43, 24, .045)");
+    core.addColorStop(1, "rgba(0, 0, 0, 0)");
 
-    ctx.globalCompositeOperation = "source-over";
     ctx.fillStyle = core;
     ctx.fillRect(0, 0, width, height);
 
+    // Deep joints sit behind the solid structures.
+    for (const seam of seams) drawSeam(seam, now, reveal);
+
+    // A distant layer of pale anatomy, softened by depth.
+    ctx.save();
+    ctx.filter = "blur(2.5px)";
+    for (const s of structures) {
+      if (s.layer > .45) drawBone(s, now, reveal * .42);
+    }
     ctx.restore();
 
+    // Foreground structures.
+    for (const s of structures) {
+      if (s.layer <= .45) drawBone(s, now, reveal);
+    }
+
+    // Recesses interrupt the surfaces and suggest deeper chambers.
+    for (const c of cavities) drawCavity(c, now, reveal);
+
+    // Dark centre remains partially unknowable.
+    const voidGradient = ctx.createRadialGradient(
+      width * .5, height * .49, 0,
+      width * .5, height * .49, Math.min(width, height) * .17
+    );
+    voidGradient.addColorStop(0, "rgba(2, 2, 2, .86)");
+    voidGradient.addColorStop(.55, "rgba(3, 3, 3, .48)");
+    voidGradient.addColorStop(1, "rgba(3, 3, 3, 0)");
+
+    ctx.fillStyle = voidGradient;
+    ctx.fillRect(0, 0, width, height);
+
     if (!reducedMotion) {
-      raf = requestAnimationFrame(draw);
+      raf = requestAnimationFrame(render);
     }
   }
 
-  function openWorld() {
-    if (opened) return;
-    opened = true;
-    startTime = performance.now();
+  function revealWorld() {
+    if (revealed) return;
 
-    createWorld();
+    revealed = true;
+    start = performance.now();
+
+    buildWorld();
     room.classList.add("open");
 
     cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(draw);
+    raf = requestAnimationFrame(render);
   }
 
   function examine() {
-    if (opened) return;
-    taps++;
+    if (revealed) return;
+    touches += 1;
 
-    // The first two touches leave no visible confirmation.
-    if (taps >= 3) openWorld();
+    // No counters or visual confirmation.
+    if (touches >= 3) revealWorld();
   }
 
   artifact.addEventListener("click", examine);
@@ -544,9 +560,8 @@ body {
   });
 
   window.addEventListener("resize", resize, { passive: true });
-
-  // Keep the original image from being dragged out of place.
-  document.addEventListener("dragstart", event => event.preventDefault());
+  document.addEventListener("dragstart",
+    event => event.preventDefault());
 
   resize();
 })();
