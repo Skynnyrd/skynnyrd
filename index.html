@@ -145,7 +145,7 @@
       );
     }
 
-    /* Second screen: a separate space, not a transition effect. */
+    /* Second world */
 
     .other-reality {
       position: fixed;
@@ -155,13 +155,16 @@
       opacity: 0;
       pointer-events: none;
       overflow: hidden;
-      background:
-        radial-gradient(
-          ellipse at 48% 52%,
-          #171611 0%,
-          #090908 34%,
-          #030303 76%
-        );
+      background: #030303;
+    }
+
+    .world-image {
+      position: absolute;
+      inset: 0;
+      background-image: url("world.png");
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
     }
 
     body.taken-over .room {
@@ -182,6 +185,10 @@
 
       .light {
         width: 100vw;
+      }
+
+      .world-image {
+        background-size: contain;
       }
     }
 
@@ -212,7 +219,9 @@
     <div class="vignette" aria-hidden="true"></div>
   </main>
 
-  <section class="other-reality" aria-hidden="true"></section>
+  <section class="other-reality" aria-hidden="true">
+    <div class="world-image"></div>
+  </section>
 
   <div class="grain" aria-hidden="true"></div>
 
