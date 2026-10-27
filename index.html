@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -63,7 +64,6 @@
       pointer-events: none;
     }
 
-    /* Desktop: keep the complete object inside the viewport. */
     .artifact {
       position: relative;
       width: min(70vw, 480px);
@@ -71,11 +71,12 @@
       height: 88dvh;
       display: grid;
       place-items: center;
+      cursor: pointer;
+      outline: none;
       animation: arrival 2.8s ease-out both;
       will-change: transform;
     }
 
-    /* Use a background layer instead of a directly draggable image. */
     .object-image {
       width: 100%;
       height: 100%;
@@ -117,7 +118,7 @@
       width: 200%;
       height: 200%;
       pointer-events: none;
-      z-index: 2;
+      z-index: 5;
       opacity: .12;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.48'/%3E%3C/svg%3E");
       animation: grainShift .24s steps(2) infinite;
@@ -134,7 +135,7 @@
     .vignette {
       position: fixed;
       inset: 0;
-      z-index: 1;
+      z-index: 4;
       pointer-events: none;
       background: radial-gradient(
         ellipse at center,
@@ -142,6 +143,34 @@
         rgba(0, 0, 0, .16) 68%,
         rgba(0, 0, 0, .64) 120%
       );
+    }
+
+    /* Second screen: a separate space, not a transition effect. */
+
+    .other-reality {
+      position: fixed;
+      inset: 0;
+      z-index: 3;
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      overflow: hidden;
+      background:
+        radial-gradient(
+          ellipse at 48% 52%,
+          #171611 0%,
+          #090908 34%,
+          #030303 76%
+        );
+    }
+
+    body.taken-over .room {
+      visibility: hidden;
+    }
+
+    body.taken-over .other-reality {
+      visibility: visible;
+      opacity: 1;
     }
 
     @media (max-width: 600px) {
@@ -170,37 +199,71 @@
   <main class="room">
     <div class="light" aria-hidden="true"></div>
 
-    <div class="artifact" aria-hidden="true">
+    <div
+      class="artifact"
+      id="artifact"
+      role="button"
+      tabindex="0"
+      aria-label="Interact with the object"
+    >
       <div class="object-image"></div>
     </div>
 
     <div class="vignette" aria-hidden="true"></div>
-    <div class="grain" aria-hidden="true"></div>
   </main>
 
+  <section class="other-reality" aria-hidden="true"></section>
+
+  <div class="grain" aria-hidden="true"></div>
+
   <script>
-    // Deter casual saving and dragging.
-    document.addEventListener("contextmenu", function (event) {
+    const artifact = document.getElementById("artifact");
+
+    let taps = 0;
+    let resetTimer;
+
+    function registerTap() {
+      if (document.body.classList.contains("taken-over")) return;
+
+      taps++;
+      clearTimeout(resetTimer);
+
+      if (taps >= 3) {
+        document.body.classList.add("taken-over");
+        return;
+      }
+
+      resetTimer = setTimeout(() => {
+        taps = 0;
+      }, 1000);
+    }
+
+    artifact.addEventListener("click", registerTap);
+
+    artifact.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        registerTap();
+      }
+    });
+
+    document.addEventListener("contextmenu", (event) => {
       event.preventDefault();
     });
 
-    document.addEventListener("dragstart", function (event) {
+    document.addEventListener("dragstart", (event) => {
       event.preventDefault();
     });
 
-    document.addEventListener("selectstart", function (event) {
+    document.addEventListener("selectstart", (event) => {
       event.preventDefault();
     });
 
-    // Block common save and view-source shortcuts where possible.
-    document.addEventListener("keydown", function (event) {
+    document.addEventListener("keydown", (event) => {
       const key = event.key.toLowerCase();
       const modifier = event.ctrlKey || event.metaKey;
 
-      if (
-        modifier &&
-        ["s", "u"].includes(key)
-      ) {
+      if (modifier && ["s", "u"].includes(key)) {
         event.preventDefault();
       }
     });
